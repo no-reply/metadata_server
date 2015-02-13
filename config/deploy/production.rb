@@ -1,5 +1,5 @@
 set :stage, :production
-set :django_settings, 'production'
+
 
 # Simple Role Syntax
 # ==================
