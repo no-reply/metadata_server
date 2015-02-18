@@ -14,9 +14,11 @@ set :wsgi_file, 'metadata_server/wsgi.py'
 
 # set :format, :pretty
 # set :log_level, :debug
-# set :pty, true
+set :pty, true
 
 set :linked_files, %w{.env db.sqlite3}
+
+set :shared_virtualenv, true
 
 # set :default_env, { path: "/opt/ruby/bin:$PATH" }
 

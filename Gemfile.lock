@@ -1,3 +1,11 @@
+GIT
+  remote: https://github.com/pobocks/capistrano-django.git
+  revision: 70d95f124e27559dc37b6c3aaa4797a46def2be8
+  branch: issue_9
+  specs:
+    capistrano-django (3.0.1)
+      capistrano (~> 3.0.0)
+
 GEM
   remote: https://www.rubygems.org/
   specs:
@@ -5,8 +13,6 @@ GEM
       i18n
       rake (>= 10.0.0)
       sshkit (>= 0.0.23)
-    capistrano-django (2.10.0)
-      capistrano (~> 3.0.0)
     colorize (0.7.5)
     i18n (0.7.0)
     net-scp (1.2.1)
@@ -23,4 +29,4 @@ PLATFORMS
 
 DEPENDENCIES
   capistrano
-  capistrano-django
+  capistrano-django!
