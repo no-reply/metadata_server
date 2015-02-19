@@ -21,12 +21,13 @@ dotenv.load_dotenv(os.path.join(BASE_DIR, '.env'))
 SECRET_KEY = os.environ['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = TEMPLATE_DEBUG = os.environ.has_key('DEBUG')
 
-TEMPLATE_DEBUG = True
+# Elasticsearch vars
+ELASTICSEARCH_URL = os.environ.get('ELASTICSEARCH_URL', 'localhost:9200')
+ELASTICSEARCH_INDEX = os.environ.get('ELASTICSEARCH_INDEX', 'manifests')
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = [x for x in os.environ.get('ALLOWED_HOSTS','').split(";") if x != '']
 
 # Application definition
 

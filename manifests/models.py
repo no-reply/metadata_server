@@ -4,8 +4,8 @@ from elasticsearch import Elasticsearch
 
 # Create your models here.
 
-ELASTICSEARCH_URL = getattr(settings, 'ELASTICSEARCH_URL', 'localhost:9200')
-ELASTICSEARCH_INDEX = getattr(settings, 'ELASTICSEARCH_INDEX', 'manifests')
+ELASTICSEARCH_URL = settings.ELASTICSEARCH_URL
+ELASTICSEARCH_INDEX = settings.ELASTICSEARCH_INDEX
 
 # Connect to elasticsearch db
 def get_connection():
@@ -34,7 +34,7 @@ def manifest_exists(manifest_id, source):
 
 def get_all_manifest_ids_with_type(source):
     es = get_connection()
-    results = es.search(index="manifests", doc_type=source, fields="[]")
+    results = es.search(index=ELASTICSEARCH_INDEX, doc_type=source, fields="[]")
     ids = []
     for r in results["hits"]["hits"]:
         ids.append(str(r["_id"]))
@@ -42,7 +42,7 @@ def get_all_manifest_ids_with_type(source):
 
 def get_all_manifest_ids():
     es = get_connection()
-    results = es.search(index="manifests", fields="[]")
+    results = es.search(index=ELASTICSEARCH_INDEX, fields="[]")
     ids = []
     for r in results["hits"]["hits"]:
         ids.append(str(r["_id"]))
