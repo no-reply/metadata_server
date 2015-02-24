@@ -30,7 +30,7 @@ namespace :deploy do
   desc 'Restart web server'
   task :restart do
     on roles(:app), in: :sequence, wait: 5 do
-      sudo "/usr/bin/systemctl restart httpd.service"
+      sudo "/etc/init.d/httpd restart"
     end
   end
 
