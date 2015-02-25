@@ -16,7 +16,7 @@ set :wsgi_file, 'metadata_server/wsgi.py'
 # set :log_level, :debug
 set :pty, true
 
-set :linked_files, %w{.env db.sqlite3}
+set :linked_files, %w{.env db.sqlite3 debug.log}
 
 set :shared_virtualenv, true
 
