@@ -43,6 +43,8 @@ def view(request, view_type, document_id):
             return render(request, 'manifests/annotator.html', {'manifests' : manifests})
         elif (view_type == "view-m1"):
             return render(request, 'manifests/m1.html', {'manifests' : manifests})
+        elif (view_type == "view-m2"):
+            return render(request, 'manifests/m2.html', {'manifests' : manifests})
         else:
             return render(request, 'manifests/manifest.html', {'manifests' : manifests})
     else:
