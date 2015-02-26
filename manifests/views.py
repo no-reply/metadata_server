@@ -66,7 +66,7 @@ def manifest(request, document_id):
         return response
     else:
         return response_doc # 404 HttpResponse
-            
+
 # Delete any document from db
 def delete(request, document_id):
     # Check if manifest exists
@@ -125,6 +125,8 @@ def get_image(request, view_type, filename):
         return HttpResponseRedirect("/static/manifests/annotator/images/%s" % filename)
     elif view_type == "view-m1":
         return HttpResponseRedirect("/static/manifests/m1/images/%s" % filename)
+    elif view_type == "view-m2":
+        return HttpResponseRedirect("/static/manifests/m2/images/%s" % filename)
     else:
         return HttpResponseRedirect("/static/manifests/prod/images/%s" % filename)
 
@@ -141,7 +143,7 @@ def get_mets(document_id, source):
     except urllib2.HTTPError, err:
         if err.code == 500 or err.code == 404:
             # document does not exist in DRS, might need to add more error codes
-            # TODO: FDS often seems to fail on its first request...maybe try again? 
+            # TODO: FDS often seems to fail on its first request...maybe try again?
             return (False, HttpResponse("The document ID %s does not exist" % document_id, status=404))
 
     response_doc = response.read()
@@ -210,7 +212,7 @@ def get_manifest(document_id, source, force_refresh, host):
             has_jp2 = mets_jp2_check(document_id)
             if not has_jp2:
                 return (has_jp2, HttpResponse("The document ID %s does not have JP2 images" % document_id, status=404), document_id, source)
-            
+
             (success, response) = get_mets(document_id, source)
         elif data_type == "huam":
             (success, response) = get_huam(document_id, source)
@@ -220,7 +222,7 @@ def get_manifest(document_id, source, force_refresh, host):
 
         if not success:
             return (success, response, document_id, source) # This is actually the 404 HttpResponse, so return and end the function
- 
+
         # Convert to shared canvas model if successful
         if data_type == "mods":
             converted_json = mods.main(response, document_id, source, host)
