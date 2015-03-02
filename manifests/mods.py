@@ -3,13 +3,14 @@
 from lxml import etree
 import json, sys
 import urllib2
+from os import environ
 
 modsNS = 'http://www.loc.gov/mods/v3'
 
 ALLNS = {'mods':modsNS}
 imageHash = {}
 
-imageUriBase = os.environ.get("IMAGE_URI_BASE", "http://ids.lib.harvard.edu/ids/iiif/")
+imageUriBase = environ.get("IMAGE_URI_BASE", "http://ids.lib.harvard.edu/ids/iiif/")
 imageUriSuffix = "/full/full/full/native"
 imageInfoSuffix = "/info.json"
 manifestUriBase = ""
