@@ -4,16 +4,17 @@ from manifests import huam
 from manifests import mets
 from manifests import mods
 from manifests import models
+from os import environ
 import json
 import urllib2
 
 # Create your views here.
 
 METS_DRS_URL = "http://fds.lib.harvard.edu/fds/deliver/"
-METS_API_URL = os.environ.get("METS_API_URL", "http://pds.lib.harvard.edu/pds/get/")
+METS_API_URL = environ.get("METS_API_URL", "http://pds.lib.harvard.edu/pds/get/")
 MODS_DRS_URL = "http://webservices.lib.harvard.edu/rest/MODS/"
 HUAM_API_URL = "http://api.harvardartmuseums.org/object/"
-HUAM_API_KEY = os.environ["HUAM_API_KEY"]
+HUAM_API_KEY = environ["HUAM_API_KEY"]
 
 sources = {"drs": "mets", "via": "mods", "hollis": "mods", "huam" : "huam"}
 

@@ -3,6 +3,7 @@
 from lxml import etree
 import json, sys
 import urllib2
+from os import environ
 
 metsNS = 'http://www.loc.gov/METS/'
 modsNS = 'http://www.loc.gov/mods/v3'
@@ -16,7 +17,7 @@ canvasInfo = []
 rangesJsonList = []
 
 ## TODO: Other image servers?
-imageUriBase = "http://ids.lib.harvard.edu/ids/iiif/"
+imageUriBase = environ.get("IMAGE_URI_BASE", "http://ids.lib.harvard.edu/ids/iiif/")
 imageUriSuffix = "/full/full/full/native"
 imageInfoSuffix = "/info.json"
 manifestUriBase = ""
