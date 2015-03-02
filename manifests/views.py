@@ -10,10 +10,10 @@ import urllib2
 # Create your views here.
 
 METS_DRS_URL = "http://fds.lib.harvard.edu/fds/deliver/"
-METS_API_URL = "http://pds.lib.harvard.edu/pds/get/"
+METS_API_URL = os.environ.get("METS_API_URL", "http://pds.lib.harvard.edu/pds/get/")
 MODS_DRS_URL = "http://webservices.lib.harvard.edu/rest/MODS/"
 HUAM_API_URL = "http://api.harvardartmuseums.org/object/"
-HUAM_API_KEY = "7a519500-933a-11e3-b8ce-c9be9b362aa7"
+HUAM_API_KEY = os.environ["HUAM_API_KEY"]
 
 sources = {"drs": "mets", "via": "mods", "hollis": "mods", "huam" : "huam"}
 
