@@ -29,6 +29,15 @@ ELASTICSEARCH_INDEX = os.environ.get('ELASTICSEARCH_INDEX', 'manifests')
 
 ALLOWED_HOSTS = [x for x in os.environ.get('ALLOWED_HOSTS','').split(";") if x != '']
 
+IIIF = {
+    "imageUriBase":     os.environ.get('IMAGE_BASE_URI', 'http://ids.lib.harvard.edu/ids/iiif/'),
+    "serviceBase":      os.environ.get('SERVICE_BASE', 'http://ids.lib.harvard.edu/ids/iiif/'),
+    "imageUriSuffix":   "/full/full/full/native",
+    "imageInfoSuffix":  "/info.json",
+    "manifestUriTmpl":  "http://%s/manifests/",
+    "profileLevel":     "http://library.stanford.edu/iiif/image-api/1.1/conformance.html#level1"
+}
+
 # Application definition
 
 INSTALLED_APPS = (

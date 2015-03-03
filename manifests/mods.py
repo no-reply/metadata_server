@@ -3,32 +3,27 @@
 from lxml import etree
 import json, sys
 import urllib2
-from os import environ
+from django.conf import settings
 
-modsNS = 'http://www.loc.gov/mods/v3'
+XMLNS = {'mods': 'http://www.loc.gov/mods/v3'}
 
-ALLNS = {'mods':modsNS}
-imageHash = {}
+imageUriBase = settings.IIIF['imageUriBase']
+imageUriSuffix = settings.IIIF['imageUriSuffix']
+imageInfoSuffix = settings.IIIF['imageInfoSuffix']
+manifestUriTmpl = settings.IIIF['manifestUriTmpl']
+serviceBase = settings.IIIF['serviceBase']
+profileLevel = settings.IIIF['profileLevel']
 
-imageUriBase = environ.get("IMAGE_URI_BASE", "http://ids.lib.harvard.edu/ids/iiif/")
-imageUriSuffix = "/full/full/full/native"
-imageInfoSuffix = "/info.json"
-manifestUriBase = ""
-serviceBase = imageUriBase
-profileLevel = "http://library.stanford.edu/iiif/image-api/1.1/conformance.html#level1"
 attribution = "Provided by Harvard University"
 
 def main(data, document_id, source, host):
-	global imageHash 
-	imageHash = {}
-	global manifestUriBase
-	manifestUriBase = "http://%s/manifests/" % host
+	manifestUriBase = settings.IIIF['manifestUriTmpl'] % host
 
 	dom = etree.XML(data)
 
-	manifestLabel = dom.xpath('/mods:mods/mods:titleInfo/mods:title/text()', namespaces=ALLNS)[0]
-	type = dom.xpath('/mods:mods/mods:typeOfResource/text()', namespaces=ALLNS)[0]
-	genres = dom.xpath('/mods:mods/mods:genre/text()', namespaces=ALLNS)
+	manifestLabel = dom.xpath('/mods:mods/mods:titleInfo/mods:title/text()', namespaces=XMLNS)[0]
+	type = dom.xpath('/mods:mods/mods:typeOfResource/text()', namespaces=XMLNS)[0]
+	genres = dom.xpath('/mods:mods/mods:genre/text()', namespaces=XMLNS)
 
 	if "handscroll" in genres:
 		viewingHint = "continuous"
@@ -41,7 +36,7 @@ def main(data, document_id, source, host):
 
 	## List of different image labels
 	## @displayLabel = Full Image, @note = Color digital image available, @note = Harvard Map Collection copy image
-	images = dom.xpath('/mods:mods//mods:location/mods:url[@displayLabel="Full Image" or contains(@note, "Color digital image") or contains(@note, "copy image")]/text()', namespaces=ALLNS)
+	images = dom.xpath('/mods:mods//mods:location/mods:url[@displayLabel="Full Image" or contains(@note, "Color digital image") or contains(@note, "copy image")]/text()', namespaces=XMLNS)
 
 	print "Images list", images
 
@@ -54,7 +49,7 @@ def main(data, document_id, source, host):
 		url_idx = ids_url.rfind('/')
 		q_idx = ids_url.rfind('?') # and before any ? in URL
 		if q_idx != -1:
-			image_id = ids_url[url_idx+1:q_idx] 
+			image_id = ids_url[url_idx+1:q_idx]
 		else:
 			image_id = ids_url[url_idx+1:]
 
@@ -102,7 +97,7 @@ def main(data, document_id, source, host):
 						"format":"image/jpeg",
 						"height": infojson['height'],
 						"width": infojson['width'],
-						"service": { 
+						"service": {
 						  "@id": imageUriBase + cvs['image'],
 						  "profile": profileLevel
 						},

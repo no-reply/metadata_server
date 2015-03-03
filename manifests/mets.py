@@ -3,26 +3,30 @@
 from lxml import etree
 import json, sys
 import urllib2
-from os import environ
+from django.conf import settings
 
-metsNS = 'http://www.loc.gov/METS/'
-modsNS = 'http://www.loc.gov/mods/v3'
-xlinkNS = 'http://www.w3.org/1999/xlink'
-premisNS ="info:lc/xmlns/premis-v2"
-hulDrsAdminNS ="http://hul.harvard.edu/ois/xml/ns/hulDrsAdmin"
+XMLNS = {
+	'mets':		'http://www.loc.gov/METS/',
+	'mods':		'http://www.loc.gov/mods/v3',
+	'xlink':	'http://www.w3.org/1999/xlink',
+	'premis':	'info:lc/xmlns/premis-v2',
+	'hulDrsAdmin':	'http://hul.harvard.edu/ois/xml/ns/hulDrsAdmin'
+}
 
-ALLNS = {'mets':metsNS, 'mods':modsNS, 'xlink':xlinkNS, 'premis':premisNS, 'hulDrsAdmin':hulDrsAdminNS}
+# Globals
 imageHash = {}
 canvasInfo = []
 rangesJsonList = []
+manifestUriBase = ""
 
 ## TODO: Other image servers?
-imageUriBase = environ.get("IMAGE_URI_BASE", "http://ids.lib.harvard.edu/ids/iiif/")
-imageUriSuffix = "/full/full/full/native"
-imageInfoSuffix = "/info.json"
-manifestUriBase = ""
-serviceBase = imageUriBase
-profileLevel = "http://library.stanford.edu/iiif/image-api/1.1/conformance.html#level1"
+imageUriBase = settings.IIIF['imageUriBase']
+imageUriSuffix = settings.IIIF['imageUriSuffix']
+imageInfoSuffix = settings.IIIF['imageInfoSuffix']
+manifestUriTmpl = settings.IIIF['manifestUriTmpl']
+serviceBase = settings.IIIF['serviceBase']
+profileLevel = settings.IIIF['profileLevel']
+
 attribution = "Provided by Harvard University"
 
 HOLLIS_API_URL = "http://webservices.lib.harvard.edu/rest/MODS/hollis/"
@@ -31,12 +35,12 @@ HOLLIS_PUBLIC_URL = "http://hollisclassic.harvard.edu/F?func=find-c&CCL_TERM=sys
 right_to_left_langs = set(['ara','heb'])
 
 def process_page(sd, rangeKey, new_ranges):
-	# first check if PAGE has label, otherwise get parents LABEL/ORDER				
+	# first check if PAGE has label, otherwise get parents LABEL/ORDER
 	if 'LABEL' in sd.attrib:
 		label = sd.get('LABEL')
 	else:
 		label = rangeKey
-	for fid in sd.xpath('./mets:fptr/@FILEID', namespaces=ALLNS):
+	for fid in sd.xpath('./mets:fptr/@FILEID', namespaces=XMLNS):
 		if fid in imageHash.keys():
 			info = {}
 			info['label'] = label
@@ -58,11 +62,11 @@ def process_struct_map(div, ranges):
 		new_ranges = []
 		process_page(div, rangeKey, new_ranges)
 		if len(new_ranges) == 1:
-			range_dict = new_ranges[0]			
+			range_dict = new_ranges[0]
 			new_ranges = range_dict.get(range_dict.keys()[0])
 		ranges.append({rangeKey : new_ranges})
 
-	subdivs = div.xpath('./mets:div', namespaces = ALLNS)	
+	subdivs = div.xpath('./mets:div', namespaces = XMLNS)
 	if len(subdivs) > 0:
 		new_ranges = []
 		for sd in subdivs:
@@ -74,11 +78,11 @@ def process_struct_map(div, ranges):
 		# this is for the books where every single page is labeled (like Book of Hours)
 		# most books do not do this
 		if len(new_ranges) == 1:
-			range_dict = new_ranges[0]			
+			range_dict = new_ranges[0]
 			new_ranges = range_dict.get(range_dict.keys()[0])
 		ranges.append({rangeKey : new_ranges})
 	return ranges
-	
+
 def get_leaf_canvases(ranges, leaf_canvases):
 	for range in ranges:
 		if type(range) is dict:
@@ -129,27 +133,27 @@ def create_ranges(ranges, previous_id, manifest_uri):
 		new_ranges = ri.get(label)
 		create_range_json(new_ranges, manifest_uri, range_id, previous_id, label)
 		create_ranges(new_ranges, range_id, manifest_uri)
-	
+
 def main(data, document_id, source, host):
 	# clear global variables
-	global imageHash 
+	global imageHash
 	imageHash = {}
-	global canvasInfo 
+	global canvasInfo
 	canvasInfo = []
-	global rangesJsonList 
+	global rangesJsonList
 	rangesJsonList = []
 	global manifestUriBase
-	manifestUriBase = "http://%s/manifests/" % host
+	manifestUriBase = settings.IIIF['manifestUriTmpl'] % host
 
 	dom = etree.XML(data)
 	# Check if this is a DRS2 object since some things, like hollis ID are in a different location
-	isDrs1 = True; 
-	drs_check = dom.xpath('/mets:mets//premis:agentName/text()', namespaces=ALLNS)
+	isDrs1 = True;
+	drs_check = dom.xpath('/mets:mets//premis:agentName/text()', namespaces=XMLNS)
 	if len(drs_check) > 0 and 'DRS2' in '\t'.join(drs_check):
 		isDrs1 = False
 
-	manifestLabel = dom.xpath('/mets:mets/@LABEL', namespaces=ALLNS)[0]
-	manifestType = dom.xpath('/mets:mets/@TYPE', namespaces=ALLNS)[0]
+	manifestLabel = dom.xpath('/mets:mets/@LABEL', namespaces=XMLNS)[0]
+	manifestType = dom.xpath('/mets:mets/@TYPE', namespaces=XMLNS)[0]
 
 	if manifestType in ["PAGEDOBJECT", "PDS DOCUMENT"]:
 		viewingHint = "paged"
@@ -163,17 +167,17 @@ def main(data, document_id, source, host):
 	viewingDirection = 'left-to-right' # default
 	seeAlso = ""
 	if isDrs1:
-		hollisCheck = dom.xpath('/mets:mets/mets:dmdSec/mets:mdWrap/mets:xmlData/mods:mods/mods:identifier[@type="hollis"]/text()', namespaces=ALLNS)
+		hollisCheck = dom.xpath('/mets:mets/mets:dmdSec/mets:mdWrap/mets:xmlData/mods:mods/mods:identifier[@type="hollis"]/text()', namespaces=XMLNS)
 	else:
-		hollisCheck = dom.xpath('/mets:mets/mets:amdSec//hulDrsAdmin:hulDrsAdmin/hulDrsAdmin:drsObject/hulDrsAdmin:harvardMetadataLinks/hulDrsAdmin:metadataIdentifier[../hulDrsAdmin:metadataType/text()="Aleph"]/text()', namespaces=ALLNS)
+		hollisCheck = dom.xpath('/mets:mets/mets:amdSec//hulDrsAdmin:hulDrsAdmin/hulDrsAdmin:drsObject/hulDrsAdmin:harvardMetadataLinks/hulDrsAdmin:metadataIdentifier[../hulDrsAdmin:metadataType/text()="Aleph"]/text()', namespaces=XMLNS)
 	if len(hollisCheck) > 0:
 		hollisID = hollisCheck[0].strip()
 		seeAlso = HOLLIS_PUBLIC_URL+hollisID
 		response = urllib2.urlopen(HOLLIS_API_URL+hollisID).read()
 		mods_dom = etree.XML(response)
-		hollis_langs = set(mods_dom.xpath('/mods:mods/mods:language/mods:languageTerm/text()', namespaces=ALLNS))
-		citeAs = mods_dom.xpath('/mods:mods/mods:note[@type="preferred citation"]/text()', namespaces=ALLNS)
-		titleInfo = mods_dom.xpath('/mods:mods/mods:titleInfo/mods:title/text()', namespaces=ALLNS)[0]
+		hollis_langs = set(mods_dom.xpath('/mods:mods/mods:language/mods:languageTerm/text()', namespaces=XMLNS))
+		citeAs = mods_dom.xpath('/mods:mods/mods:note[@type="preferred citation"]/text()', namespaces=XMLNS)
+		titleInfo = mods_dom.xpath('/mods:mods/mods:titleInfo/mods:title/text()', namespaces=XMLNS)[0]
 		if len(citeAs) > 0:
 			manifestLabel = citeAs[0] + " " + titleInfo
 		# intersect both sets and determine if there are common elements
@@ -182,18 +186,18 @@ def main(data, document_id, source, host):
 
 	manifest_uri = manifestUriBase + "%s:%s" % (source, document_id)
 
-	images = dom.xpath('/mets:mets/mets:fileSec/mets:fileGrp/mets:file[@MIMETYPE="image/jp2"]', namespaces=ALLNS)
-	struct = dom.xpath('/mets:mets/mets:structMap/mets:div[@TYPE="CITATION"]/mets:div', namespaces=ALLNS)
+	images = dom.xpath('/mets:mets/mets:fileSec/mets:fileGrp/mets:file[@MIMETYPE="image/jp2"]', namespaces=XMLNS)
+	struct = dom.xpath('/mets:mets/mets:structMap/mets:div[@TYPE="CITATION"]/mets:div', namespaces=XMLNS)
 
 	# Check if the object has a stitched version(s) already made.  Use only those
 	for st in struct:
-		stitchCheck = st.xpath('./@LABEL[contains(., "stitched")]', namespaces=ALLNS)
+		stitchCheck = st.xpath('./@LABEL[contains(., "stitched")]', namespaces=XMLNS)
 		if stitchCheck:
 			struct = st
 			break
 
 	for img in images:
-		imageHash[img.xpath('./@ID', namespaces=ALLNS)[0]] = img.xpath('./mets:FLocat/@xlink:href', namespaces = ALLNS)[0]
+		imageHash[img.xpath('./@ID', namespaces=XMLNS)[0]] = img.xpath('./mets:FLocat/@xlink:href', namespaces = XMLNS)[0]
 
 	rangeList = []
 	rangeInfo = []
@@ -244,7 +248,7 @@ def main(data, document_id, source, host):
 						"format":"image/jpeg",
 						"height": infojson['height'],
 						"width": infojson['width'],
-						"service": { 
+						"service": {
 						  "@id": imageUriBase + cvs['image'],
 						  "profile": profileLevel
 						},

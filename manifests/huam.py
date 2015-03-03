@@ -2,21 +2,17 @@
 
 import json, sys
 import urllib2
+from django.conf import settings
 
-imageHash = {}
-
-imageUriBase = "https://images.harvardx.harvard.edu/ids/iiif/"
-imageUriSuffix = "/full/full/full/native"
-imageInfoSuffix = "/info.json"
-manifestUriBase = ""
-serviceBase = imageUriBase
-profileLevel = "http://library.stanford.edu/iiif/image-api/1.1/conformance.html#level1"
+imageUriBase =    settings.IIIF['imageUriBase']
+imageUriSuffix =  settings.IIIF['imageUriSuffix']
+imageInfoSuffix = settings.IIIF['imageInfoSuffix']
+manifestUriTmpl = settings.IIIF['manifestUriTmpl']
+serviceBase =     settings.IIIF['serviceBase']
+profileLevel =    settings.IIIF['profileLevel']
 
 def main(data, document_id, source, host):
-	global imageHash 
-	imageHash = {}
-	global manifestUriBase
-	manifestUriBase = "http://%s/manifests/" % host
+	manifestUriBase = settings.IIIF.manifestUriTmpl % host
 
 	huam_json = json.loads(data)
 	attribution = huam_json["creditline"]
@@ -52,7 +48,7 @@ def main(data, document_id, source, host):
 		url_idx = ids_url.rfind('/')
 		q_idx = ids_url.rfind('?') # and before any ? in URL
 		if q_idx != -1:
-			image_id = ids_url[url_idx+1:q_idx] 
+			image_id = ids_url[url_idx+1:q_idx]
 		else:
 			image_id = ids_url[url_idx+1:]
 
@@ -98,7 +94,7 @@ def main(data, document_id, source, host):
 						"format":"image/jpeg",
 						"height": infojson['height'],
 						"width": infojson['width'],
-						"service": { 
+						"service": {
 						  "@id": imageUriBase + cvs['image'],
 						  "profile": profileLevel
 						},
