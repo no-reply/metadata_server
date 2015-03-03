@@ -10,7 +10,7 @@ import urllib2
 
 # Create your views here.
 
-METS_DRS_URL = "http://fds.lib.harvard.edu/fds/deliver/"
+METS_DRS_URL = environ.get("METS_DRS_URL", "http://fds.lib.harvard.edu/fds/deliver/")
 METS_API_URL = environ.get("METS_API_URL", "http://pds.lib.harvard.edu/pds/get/")
 MODS_DRS_URL = "http://webservices.lib.harvard.edu/rest/MODS/"
 HUAM_API_URL = "http://api.harvardartmuseums.org/object/"
