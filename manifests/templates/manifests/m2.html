@@ -17,11 +17,15 @@
   <script src="{% static 'manifests/m2/mirador.js' %}"></script>
   <script type="text/javascript">
     $(function() {
-
+      var PDS_VIEW_URL = "//pdstest.lib.harvard.edu:9005/pds/view/"
       Mirador({
         "id": "viewer",
         "currentWorkspaceType": "singleObject",
         "workspaceAutoSave": false,
+        "mainMenuSettings" : {
+          "userButtons" : [
+            {"label": "View in PDS",
+             "attributes": { "id": "view-in-pds", "href": "#no-op"}}]},
         "data": [
           {% for uri, title in manifests.items %}
             { "manifestUri": "{{ uri }}", "location": "Harvard University", "title": "{{ title }}"},
@@ -30,6 +34,18 @@
         "windowObjects":[
           { "loadedManifest": "{{ uri }}", "viewType": "ImageView" }
         ]
+      });
+
+
+      $(document).on('click', '#view-in-pds', function (e) {
+        e.preventDefault();
+        var parts = window.location.pathname.split("/");
+        var last_idx = parts.length - 1;
+        var drs_match = parts[last_idx].match(/drs:(\d+)/);
+
+        if (drs_match && drs_match[1]){
+          window.open(PDS_VIEW_URL + drs_match[1]);
+        }
       });
     });
   </script>
