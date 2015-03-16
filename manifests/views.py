@@ -4,6 +4,7 @@ from manifests import huam
 from manifests import mets
 from manifests import mods
 from manifests import models
+from manifests import ams
 from os import environ
 import json
 import urllib2
@@ -29,6 +30,12 @@ def view(request, view_type, document_id):
             continue # not a valid id, don't display
         source = parts[0]
         id = parts[1]
+        # drs: check AMS to see if this is a restricted obj
+        # TODO:  move this check into get_manifest() for hollis
+        if 'drs' == source:
+            ams_redirect = ams.getAMSredirectUrl(request.COOKIES, id)
+            if ams_redirect:
+                return HttpResponseRedirect(ams_redirect)
         #print source, id
         (success, response, real_id, real_source) = get_manifest(id, source, False, host)
         if success:
