@@ -26,6 +26,7 @@ set :keep_releases, 3
 
 set :default_env, {'LD_LIBRARY_PATH' => "/usr/local/lib"}
 
+
 namespace :deploy do
   desc 'Restart web server'
   task :restart do
@@ -33,6 +34,25 @@ namespace :deploy do
       sudo "/etc/init.d/httpd restart"
     end
   end
+
+  desc 'Update git repo'
+  task :update_git_repo do
+    on roles(:all) do
+      with fetch(:git_environmental_variables) do
+        within repo_path do
+          current_repo_url = execute :git, :config, :'--get', :'remote.origin.url'
+          unless repo_url == current_repo_url
+            execute :git, :remote, :'set-url', 'origin', repo_url
+            execute :git, :remote, :update
+
+            execute :git, :config, :'--get', :'remote.origin.url'
+          end
+        end
+      end
+    end
+  end
+
+  before :starting, 'update_git_repo'
 
   after :publishing, 'deploy:restart'
 
