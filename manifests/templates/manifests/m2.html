@@ -20,8 +20,8 @@
       var PDS_VIEW_URL = "//pdstest.lib.harvard.edu:9005/pds/view/"
       Mirador({
         "id": "viewer",
-        "currentWorkspaceType": "singleObject",
-        "workspaceAutoSave": false,
+        "layout": "1x1",
+        "saveSession": false,
         "mainMenuSettings" : {
           "userButtons" : [
             {"label": "<span class='fa fa-external-link'></span>View in PDS",
@@ -32,7 +32,8 @@
           {% endfor %}
         ],
         "windowObjects":[
-          { "loadedManifest": "{{ uri }}", "viewType": "ImageView" }
+          { "loadedManifest": "{{ loadedUri }}",
+             "viewType": "imageView" }
         ]
       });
 

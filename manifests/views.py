@@ -45,7 +45,7 @@ def view(request, view_type, document_id):
         elif (view_type == "view-m1"):
             return render(request, 'manifests/m1.html', {'manifests' : manifests})
         elif (view_type == "view-m2"):
-            return render(request, 'manifests/m2.html', {'manifests' : manifests})
+            return render(request, 'manifests/m2.html', {'manifests' : manifests, 'loadedUri' : manifests.keys()[0]})
         else:
             return render(request, 'manifests/manifest.html', {'manifests' : manifests})
     else:
