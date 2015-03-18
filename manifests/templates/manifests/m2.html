@@ -26,7 +26,12 @@
           "userButtons" : [
             {"label": "View in PDS",
              "iconClass": "fa fa-external-link",
-             "attributes": { "id": "view-in-pds", "href": "#no-op"}}]},
+             "attributes": { "id": "view-in-pds", "href": "#no-op"}}],
+	  "userLogo" : {
+             "label": "Harvard Placeholder",
+             "attributes": { "id": "harvard-bug", "href": "http://harvard.edu"}}
+        },
+        
         "data": [
           {% for uri, title in manifests.items %}
             { "manifestUri": "{{ uri }}", "location": "Harvard University", "title": "{{ title }}"},
