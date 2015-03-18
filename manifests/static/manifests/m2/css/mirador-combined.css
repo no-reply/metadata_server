@@ -2257,6 +2257,11 @@ a {
 .mirador-main-menu.user-buttons {
   padding-right: 0;
 }
+.mirador-main-menu.user-logo {
+  padding-right: 0;
+  padding-left: 0;
+  float: left;
+}
 
 .mirador-main-menu li {
   cursor: pointer;
@@ -2500,7 +2505,7 @@ a {
 }
 
 .preview-image {
-  background-color: lightgray;
+  background-color: gray;
   box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.7);
   float:left;
   margin-right:15px;
@@ -2949,7 +2954,7 @@ li.highlight {
 }
 
 .panel-thumbnail-view ul.panel-listing-thumbs li img {
-  background-color: #eee;
+  background-color: gray;
   min-height: 25px;
   min-width: 25px;
   margin: 0 auto;
@@ -2957,7 +2962,7 @@ li.highlight {
   box-sizing:border-box;
 }
 .panel-thumbnail-view ul.panel-listing-thumbs li img:hover {
-  border:3px solid rgba(0,191,255,0.7);
+  border:2px solid rgba(0,191,255,0.7);
   transform: scale(1.1);
   cursor: pointer;
 }
@@ -3691,6 +3696,10 @@ div.manifest-info a.mirador-btn.mirador-icon-toc {
 .qtip-bootstrap .qtip-content {
   padding: 0;
   clear: both;
+}
+.qtip-content {
+  max-height: 150px;
+  overflow: auto;
 }
 .annotation-tooltip {
   padding: 12px; 
