@@ -31,7 +31,7 @@
              "label": "Harvard Placeholder",
              "attributes": { "id": "harvard-bug", "href": "http://harvard.edu"}}
         },
-        
+
         "data": [
           {% for uri, title in manifests.items %}
             { "manifestUri": "{{ uri }}", "location": "Harvard University", "title": "{{ title }}"},
@@ -49,9 +49,12 @@
         var parts = window.location.pathname.split("/");
         var last_idx = parts.length - 1;
         var drs_match = parts[last_idx].match(/drs:(\d+)/);
+        var mWindow = Mirador.viewer.workspace.slots[0].window;
+        var focusType = mWindow.currentFocus;
+        var n = mWindow.focusModules[focusType].currentImgIndex + 1;
 
         if (drs_match && drs_match[1]){
-          window.open(PDS_VIEW_URL + drs_match[1]);
+          window.open(PDS_VIEW_URL + drs_match[1] + "?n=" + n);
         }
       });
     });
