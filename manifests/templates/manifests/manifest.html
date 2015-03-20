@@ -4,32 +4,58 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-  <link rel="stylesheet" type="text/css" href="{% static 'manifests/prod/css/mirador-combined.css' %}">
+  <link rel="stylesheet" type="text/css" href="{% static 'manifests/m2/css/mirador-combined.css' %}">
   <title>Harvard Mirador Viewer</title>
   <style type="text/css">
     body { padding: 0; margin: 0; overflow: hidden; font-size: 70%; }
-    #viewer { background: #333 url({% static 'manifests/prod/images/debut_dark.png' %}) left top repeat; width: 100%; height: 100%; position: fixed; }
+    #viewer { background: #333 url({% static 'manifests/m2/images/debut_dark.png' %}) left top repeat; width: 100%; height: 100%; position: fixed; }
   </style>
 </head>
 <body>
   <div id="viewer"></div>
 
-  <script src="{% static 'manifests/prod/mirador.js' %}"></script>
+  <script src="{% static 'manifests/m2/mirador.js' %}"></script>
   <script type="text/javascript">
     $(function() {
-
+      var PDS_VIEW_URL = "//pdstest.lib.harvard.edu:9005/pds/view/"
       Mirador({
         "id": "viewer",
+        "layout": "1x1",
+        "saveSession": false,
+        "mainMenuSettings" : {
+          "userButtons" : [
+            {"label": "View in PDS",
+             "iconClass": "fa fa-external-link",
+             "attributes": { "id": "view-in-pds", "href": "#no-op"}}],
+	  "userLogo" : {
+             "label": "Harvard Placeholder",
+             "attributes": { "id": "harvard-bug", "href": "http://harvard.edu"}}
+        },
+
         "data": [
-    {% for uri, title in manifests.items %}
-    { "manifestUri": "{{ uri }}", "location": "Harvard University" },
-    {% endfor %}
+          {% for uri, title in manifests.items %}
+            { "manifestUri": "{{ uri }}", "location": "Harvard University", "title": "{{ title }}"},
+          {% endfor %}
         ],
-    "windowObjects": [
-    {% for uri, title in manifests.items %}
-       { "loadedManifest": "{{ uri }}" },
-    {% endfor %}
+        "windowObjects":[
+          { "loadedManifest": "{{ loadedUri }}",
+             "viewType": "ImageView" }
         ]
+      });
+
+
+      $(document).on('click', '#view-in-pds', function (e) {
+        e.preventDefault();
+        var parts = window.location.pathname.split("/");
+        var last_idx = parts.length - 1;
+        var drs_match = parts[last_idx].match(/drs:(\d+)/);
+        var mWindow = Mirador.viewer.workspace.slots[0].window;
+        var focusType = mWindow.currentFocus;
+        var n = mWindow.focusModules[focusType].currentImgIndex + 1;
+
+        if (drs_match && drs_match[1]){
+          window.open(PDS_VIEW_URL + drs_match[1] + "?n=" + n);
+        }
       });
     });
   </script>
