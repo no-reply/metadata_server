@@ -4,6 +4,7 @@ from lxml import etree
 import json, sys
 import urllib2
 from django.conf import settings
+import webclient
 
 XMLNS = {'mods': 'http://www.loc.gov/mods/v3'}
 
@@ -16,7 +17,7 @@ profileLevel = settings.IIIF['profileLevel']
 
 attribution = "Provided by Harvard University"
 
-def main(data, document_id, source, host):
+def main(data, document_id, source, host, cookie=None):
 	manifestUriBase = settings.IIIF['manifestUriTmpl'] % host
 
 	dom = etree.XML(data)
@@ -44,7 +45,8 @@ def main(data, document_id, source, host):
 	for (counter, im) in enumerate(images):
 		info = {}
 		info['label'] = str(counter+1)
-		response = urllib2.urlopen(im)
+		#response = urllib2.urlopen(im)
+		response = webclient.get(im, cookie)
 		ids_url = response.geturl()
 		url_idx = ids_url.rfind('/')
 		q_idx = ids_url.rfind('?') # and before any ? in URL
@@ -78,7 +80,8 @@ def main(data, document_id, source, host):
 	canvases = []
 
 	for cvs in canvasInfo:
-		response = urllib2.urlopen(imageUriBase + cvs['image'] + imageInfoSuffix)
+		#response = urllib2.urlopen(imageUriBase + cvs['image'] + imageInfoSuffix)
+		response = webclient.get(imageUriBase + cvs['image'] + imageInfoSuffix, cookie)
 		infojson = json.load(response)
 		cvsjson = {
 			"@id": manifest_uri + "/canvas/canvas-%s.json" % cvs['image'],
