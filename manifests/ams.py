@@ -13,7 +13,10 @@ def getAccessFlag(drsId):
     oliviaServletURL = oliviaServletBase + drsId	
     req = requests.get(oliviaServletURL)
     regex = re.compile('Restrict Flag: ([A-Z])')
-    flag = regex.search(req.text).group(1)
+    match = regex.search(req.text)
+    flag = None
+    if match:
+        flag = match.group(1)
     if flag:
         return flag
     else:
