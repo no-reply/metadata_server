@@ -8,6 +8,8 @@ from manifests import ams
 from os import environ
 import json
 import urllib2
+import requests
+import webclient
 
 # Create your views here.
 
@@ -16,6 +18,7 @@ METS_API_URL = environ.get("METS_API_URL", "http://pds.lib.harvard.edu/pds/get/"
 MODS_DRS_URL = "http://webservices.lib.harvard.edu/rest/MODS/"
 HUAM_API_URL = "http://api.harvardartmuseums.org/object/"
 HUAM_API_KEY = environ["HUAM_API_KEY"]
+COOKIE_DOMAIN = environ.get("COOKIE_DOMAIN", ".hul.harvard.edu")
 
 sources = {"drs": "mets", "via": "mods", "hollis": "mods", "huam" : "huam"}
 
@@ -23,6 +26,7 @@ sources = {"drs": "mets", "via": "mods", "hollis": "mods", "huam" : "huam"}
 def view(request, view_type, document_id):
     doc_ids = document_id.split(';')
     manifests = {}
+    ams_cookie = None
     host = request.META['HTTP_HOST']
     for doc_id in doc_ids:
         parts = doc_id.split(':')
@@ -36,8 +40,10 @@ def view(request, view_type, document_id):
             ams_redirect = ams.getAMSredirectUrl(request.COOKIES, id)
             if ams_redirect:
                 return HttpResponseRedirect(ams_redirect)
+            if 'hulaccess' in request.COOKIES:
+                ams_cookie = request.COOKIES['hulaccess']
         #print source, id
-        (success, response, real_id, real_source) = get_manifest(id, source, False, host)
+        (success, response, real_id, real_source) = get_manifest(id, source, False, host, ams_cookie)
         if success:
             title = models.get_manifest_title(real_id, real_source)
             uri = "http://%s/manifests/%s:%s" % (host,real_source,real_id)
@@ -63,11 +69,12 @@ def view(request, view_type, document_id):
 def manifest(request, document_id):
     parts = document_id.split(":")
     host = request.META['HTTP_HOST']
+    cookie = request.COOKIES['hulaccess']
     if len(parts) != 2:
         return HttpResponse("Invalid document ID. Format: [data source]:[ID]", status=404)
     source = parts[0]
     id = parts[1]
-    (success, response_doc, real_id, real_source) = get_manifest(id, source, False, host)
+    (success, response_doc, real_id, real_source) = get_manifest(id, source, False, host, cookie)
     if success:
         response = HttpResponse(response_doc)
         add_headers(response)
@@ -96,11 +103,12 @@ def delete(request, document_id):
 def refresh(request, document_id):
     parts = document_id.split(":")
     host = request.META['HTTP_HOST']
+    cookie = request.COOKIES['hulaccess']
     if len(parts) != 2:
         return HttpResponse("Invalid document ID. Format: [data source]:[ID]", status=404)
     source = parts[0]
     id = parts[1]
-    (success, response_doc, real_id, real_source) = get_manifest(id, source, True, host)
+    (success, response_doc, real_id, real_source) = get_manifest(id, source, True, host, cookie)
 
     if success:
         response = HttpResponse(response_doc)
@@ -116,8 +124,9 @@ def refresh_by_source(request, source):
     document_ids = models.get_all_manifest_ids_with_type(source)
     counter = 0
     host = request.META['HTTP_HOST']
+    cookie = request.COOKIES['hulaccess']
     for id in document_ids:
-        (success, response_doc, real_id, real_source) = get_manifest(id, source, True,  host)
+        (success, response_doc, real_id, real_source) = get_manifest(id, source, True,  host, cookie)
         if success:
             counter = counter + 1
 
@@ -144,10 +153,11 @@ def clean_url(request, view_type):
 
 ## HELPER FUNCTIONS ##
 # Gets METS XML from DRS
-def get_mets(document_id, source):
+def get_mets(document_id, source, cookie=None):
     mets_url = METS_DRS_URL+document_id
     try:
-        response = urllib2.urlopen(mets_url)
+        #response = urllib2.urlopen(mets_url)
+        response = webclient.get(mets_url, cookie)
     except urllib2.HTTPError, err:
         if err.code == 500 or err.code == 404:
             # document does not exist in DRS, might need to add more error codes
@@ -158,9 +168,10 @@ def get_mets(document_id, source):
     return (True, response_doc)
 
 # IDS can only deep zoom on JP2 images
-def mets_jp2_check(document_id):
+def mets_jp2_check(document_id, cookie=None):
     api_url = METS_API_URL+document_id
-    response = urllib2.urlopen(api_url)
+    #response = urllib2.urlopen(api_url)
+    response = webclient.get(api_url, cookie)
     response_doc = response.read()
     # probably don't actually need to parse this as an XML document
     # just look for this particular string in the response
@@ -170,11 +181,12 @@ def mets_jp2_check(document_id):
         return False
 
 # Gets MODS XML from Presto API
-def get_mods(document_id, source):
+def get_mods(document_id, source, cookie=None):
     mods_url = MODS_DRS_URL+source+"/"+document_id
     #print mods_url
     try:
-        response = urllib2.urlopen(mods_url)
+        #response = urllib2.urlopen(mods_url)
+        response = webclient.get(mods_url, cookie)
     except urllib2.HTTPError, err:
         if err.code == 500 or err.code == 403: ## TODO
             # document does not exist in DRS
@@ -203,7 +215,7 @@ def add_headers(response):
     return response
 
 # Uses other helper methods to create JSON
-def get_manifest(document_id, source, force_refresh, host):
+def get_manifest(document_id, source, force_refresh, host, cookie=None):
     # Check if manifest exists
     has_manifest = models.manifest_exists(document_id, source)
 
@@ -214,14 +226,14 @@ def get_manifest(document_id, source, force_refresh, host):
         data_type = sources[source]
         if data_type == "mods":
             ## TODO: check image types??
-            (success, response) = get_mods(document_id, source)
+            (success, response) = get_mods(document_id, source, cookie)
         elif data_type == "mets":
             # check if mets object has jp2 images, only those will work in image server
-            has_jp2 = mets_jp2_check(document_id)
+            has_jp2 = mets_jp2_check(document_id, cookie)
             if not has_jp2:
                 return (has_jp2, HttpResponse("The document ID %s does not have JP2 images" % document_id, status=404), document_id, source)
 
-            (success, response) = get_mets(document_id, source)
+            (success, response) = get_mets(document_id, source, cookie)
         elif data_type == "huam":
             (success, response) = get_huam(document_id, source)
         else:
@@ -233,15 +245,15 @@ def get_manifest(document_id, source, force_refresh, host):
 
         # Convert to shared canvas model if successful
         if data_type == "mods":
-            converted_json = mods.main(response, document_id, source, host)
+            converted_json = mods.main(response, document_id, source, host, cookie)
             # check if this is, in fact, a PDS object masked as a hollis request
             # If so, get the manifest with the DRS METS ID and return that
             json_doc = json.loads(converted_json)
             if 'pds' in json_doc:
                 id = json_doc['pds']
-                return get_manifest(id, 'drs', False, host)
+                return get_manifest(id, 'drs', False, host, source)
         elif data_type == "mets":
-            converted_json = mets.main(response, document_id, source, host)
+            converted_json = mets.main(response, document_id, source, host, cookie)
         elif data_type == "huam":
             converted_json = huam.main(response, document_id, source, host)
         else:
