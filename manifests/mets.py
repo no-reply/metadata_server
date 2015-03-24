@@ -4,6 +4,7 @@ from lxml import etree
 import json, sys
 import urllib2
 from django.conf import settings
+import webclient
 
 XMLNS = {
 	'mets':		'http://www.loc.gov/METS/',
@@ -134,7 +135,7 @@ def create_ranges(ranges, previous_id, manifest_uri):
 		create_range_json(new_ranges, manifest_uri, range_id, previous_id, label)
 		create_ranges(new_ranges, range_id, manifest_uri)
 
-def main(data, document_id, source, host):
+def main(data, document_id, source, host, cookie=None):
 	# clear global variables
 	global imageHash
 	imageHash = {}
@@ -173,7 +174,8 @@ def main(data, document_id, source, host):
 	if len(hollisCheck) > 0:
 		hollisID = hollisCheck[0].strip()
 		seeAlso = HOLLIS_PUBLIC_URL+hollisID
-		response = urllib2.urlopen(HOLLIS_API_URL+hollisID).read()
+		#response = urllib2.urlopen(HOLLIS_API_URL+hollisID).read()
+		response = webclient.get(HOLLIS_API_URL+hollisID, cookie).read()
 		mods_dom = etree.XML(response)
 		hollis_langs = set(mods_dom.xpath('/mods:mods/mods:language/mods:languageTerm/text()', namespaces=XMLNS))
 		citeAs = mods_dom.xpath('/mods:mods/mods:note[@type="preferred citation"]/text()', namespaces=XMLNS)
@@ -229,7 +231,8 @@ def main(data, document_id, source, host):
 
 	canvases = []
 	for cvs in canvasInfo:
-		response = urllib2.urlopen(imageUriBase + cvs['image'] + imageInfoSuffix)
+		#response = urllib2.urlopen(imageUriBase + cvs['image'] + imageInfoSuffix)
+		response = webclient.get(imageUriBase + cvs['image'] + imageInfoSuffix, cookie)
 		infojson = json.load(response)
 		cvsjson = {
 			"@id": manifest_uri + "/canvas/canvas-%s.json" % cvs['image'],
