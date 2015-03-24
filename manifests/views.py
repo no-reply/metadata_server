@@ -69,7 +69,7 @@ def view(request, view_type, document_id):
 def manifest(request, document_id):
     parts = document_id.split(":")
     host = request.META['HTTP_HOST']
-    cookie = request.COOKIES['hulaccess']
+    cookie = request.COOKIES.get('hulaccess', None)
     if len(parts) != 2:
         return HttpResponse("Invalid document ID. Format: [data source]:[ID]", status=404)
     source = parts[0]
@@ -103,7 +103,7 @@ def delete(request, document_id):
 def refresh(request, document_id):
     parts = document_id.split(":")
     host = request.META['HTTP_HOST']
-    cookie = request.COOKIES['hulaccess']
+    cookie = request.COOKIES.get('hulaccess', None)
     if len(parts) != 2:
         return HttpResponse("Invalid document ID. Format: [data source]:[ID]", status=404)
     source = parts[0]
@@ -124,7 +124,7 @@ def refresh_by_source(request, source):
     document_ids = models.get_all_manifest_ids_with_type(source)
     counter = 0
     host = request.META['HTTP_HOST']
-    cookie = request.COOKIES['hulaccess']
+    cookie = request.COOKIES('hulaccess', None)
     for id in document_ids:
         (success, response_doc, real_id, real_source) = get_manifest(id, source, True,  host, cookie)
         if success:
