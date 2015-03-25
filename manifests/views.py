@@ -27,6 +27,8 @@ def view(request, view_type, document_id):
     doc_ids = document_id.split(';')
     manifests = {}
     ams_cookie = None
+    if 'hulaccess' in request.COOKIES:
+        ams_cookie = request.COOKIES['hulaccess']
     host = request.META['HTTP_HOST']
     for doc_id in doc_ids:
         parts = doc_id.split(':')
@@ -40,8 +42,7 @@ def view(request, view_type, document_id):
             ams_redirect = ams.getAMSredirectUrl(request.COOKIES, id)
             if ams_redirect:
                 return HttpResponseRedirect(ams_redirect)
-            if 'hulaccess' in request.COOKIES:
-                ams_cookie = request.COOKIES['hulaccess']
+
         #print source, id
         (success, response, real_id, real_source) = get_manifest(id, source, False, host, ams_cookie)
         if success:
@@ -251,7 +252,7 @@ def get_manifest(document_id, source, force_refresh, host, cookie=None):
             json_doc = json.loads(converted_json)
             if 'pds' in json_doc:
                 id = json_doc['pds']
-                return get_manifest(id, 'drs', False, host, source)
+                return get_manifest(id, 'drs', False, host, cookie)
         elif data_type == "mets":
             converted_json = mets.main(response, document_id, source, host, cookie)
         elif data_type == "huam":
