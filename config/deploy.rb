@@ -39,20 +39,22 @@ namespace :deploy do
   task :update_git_repo do
     on roles(:all) do
       with fetch(:git_environmental_variables) do
-        within repo_path do
-          current_repo_url = execute :git, :config, :'--get', :'remote.origin.url'
-          unless repo_url == current_repo_url
-            execute :git, :remote, :'set-url', 'origin', repo_url
-            execute :git, :remote, :update
+        if test("[ -f #{repo_path} ]")
+          within repo_path do
+            current_repo_url = execute :git, :config, :'--get', :'remote.origin.url'
+            unless repo_url == current_repo_url
+              execute :git, :remote, :'set-url', 'origin', repo_url
+              execute :git, :remote, :update
 
-            execute :git, :config, :'--get', :'remote.origin.url'
+              execute :git, :config, :'--get', :'remote.origin.url'
+            end
           end
         end
       end
     end
   end
 
-  before :starting, 'update_git_repo'
+  #before :starting, 'update_git_repo'
 
   after :publishing, 'deploy:restart'
 
