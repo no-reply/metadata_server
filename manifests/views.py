@@ -176,7 +176,7 @@ def mets_jp2_check(document_id, cookie=None):
     response_doc = response.read()
     # probably don't actually need to parse this as an XML document
     # just look for this particular string in the response
-    if "<img_mimetype>jp2</img_mimetype>" in response_doc:
+    if any([x in response_doc for x in ["<img_mimetype>jp2</img_mimetype>", "image/jp2"]]):
         return True
     else:
         return False
