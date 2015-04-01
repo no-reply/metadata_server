@@ -38,9 +38,9 @@ right_to_left_langs = set(['ara','heb'])
 def process_page(sd, rangeKey, new_ranges):
 	# first check if PAGE has label, otherwise get parents LABEL/ORDER
 	if 'LABEL' in sd.attrib:
-		label = sd.get('LABEL')
+		label = sd.get('LABEL') + " (seq. {0})".format(sd.get("ORDER"))
 	else:
-		label = rangeKey
+		label = rangeKey + " (seq. {0})".format(sd.get("ORDER"))
 	for fid in sd.xpath('./mets:fptr/@FILEID', namespaces=XMLNS):
 		if fid in imageHash.keys():
 			info = {}
