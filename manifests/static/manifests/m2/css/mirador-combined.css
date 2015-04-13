@@ -1965,9 +1965,9 @@ table {
 /*
  * Default Layout Theme
  *
- * Created for jquery.layout 
+ * Created for jquery.layout
  *
- * Copyright (c) 2010 
+ * Copyright (c) 2010
  *   Fabrizio Balliano (http://www.fabrizioballiano.net)
  *   Kevin Dalman (http://allpro.net)
  *
@@ -1992,9 +1992,9 @@ body {
  *	PANES & CONTENT-DIVs
  */
 .ui-layout-pane { /* all 'panes' */
-	background:	#FFF; 
+	background:	#FFF;
 	border:		1px solid #BBB;
-	padding:	10px; 
+	padding:	10px;
 	overflow:	auto;
 	/* DO NOT add scrolling (or padding) to 'panes' that have a content-div,
 	   otherwise you may get double-scrollbars - on the pane AND on the content-div
@@ -2074,7 +2074,7 @@ body {
 			opacity: 1.00; /* on-hover, show the resizer-bar normally */
 			filter:  alpha(opacity=100);
 		}
-		/* sliding resizer - add 'outside-border' to resizer on-hover 
+		/* sliding resizer - add 'outside-border' to resizer on-hover
 		 * this sample illustrates how to target specific panes and states */
 		.ui-layout-resizer-north-sliding-hover	{ border-bottom-width:	1px; }
 		.ui-layout-resizer-south-sliding-hover	{ border-top-width:		1px; }
@@ -2123,7 +2123,7 @@ body {
 
 /*
  *	PANE-MASKS
- *	these styles are hard-coded on mask elems, but are also 
+ *	these styles are hard-coded on mask elems, but are also
  *	included here as !important to ensure will overrides any generic styles
  */
 .ui-layout-mask {
@@ -2195,10 +2195,10 @@ a {
 }
 
 /* jquery-ui-dialog theming/customisation (overrides to reset neutral defaults)
----------------------------------------------------------------------------- 
+----------------------------------------------------------------------------
  */
-  .ui-dialog-titlebar {
-    display:none;
+.ui-dialog-titlebar {
+  color: black;
 }
 .ui-dialog {
   overflow:hidden;
@@ -2210,7 +2210,7 @@ a {
 
 /*----------------------------------------------------------------------------
 /* Mirador styles
----------------------------------------------------------------------------- 
+----------------------------------------------------------------------------
  */
 
   .mirador-viewer, .mirador-main-menu-bar, .mirador-status-bar {
@@ -2362,7 +2362,7 @@ a {
 }
 
 
-/* main menu select menu 
+/* main menu select menu
 ---------------------------------------------------------------------------- */
   #manifest-select-menu, #workspace-select-menu, #workspaceContainer {
     position: absolute;
@@ -3011,7 +3011,7 @@ li.highlight {
 
 /* Canvas HUD
 ----------------------- */
-  .mirador-canvas-hud { 
+  .mirador-canvas-hud {
     position:absolute;
     left: 0;
     top:0;
@@ -3323,7 +3323,7 @@ text {
 }
 .annotation, .osd-select-rectangle {
   border: 2px solid deepSkyBlue;
-  box-shadow: 0px 0px 5px white; 
+  box-shadow: 0px 0px 5px white;
   box-sizing: border-box;
 }
 .annotation.selected {
@@ -3633,14 +3633,14 @@ ul.dropdown {
   margin:0;
   cursor: pointer;
   box-sizing: border-box;
-  background-color: #dddddd;  
+  background-color: #dddddd;
   padding: 10px;
   width:100%;
   text-align:left;
 }
 .dropdown li:hover {
   border-left: 3px solid deepskyblue;
-  background-color: #dddddd;  
+  background-color: #dddddd;
   padding-left: 7px;
   font-weight: bold;
 }
@@ -3692,8 +3692,8 @@ div.manifest-info a.mirador-btn.mirador-icon-toc {
   color: black;
 }
 
-.mirador-viewer a.mirador-icon-image-view.selected, 
-.mirador-viewer a.mirador-icon-thumbs-view.selected, 
+.mirador-viewer a.mirador-icon-image-view.selected,
+.mirador-viewer a.mirador-icon-thumbs-view.selected,
 .mirador-viewer a.mirador-icon-toc.selected,
 .mirador-viewer a.mirador-icon-metadata-view.selected {
   color: black;
@@ -3722,7 +3722,7 @@ div.manifest-info a.mirador-btn.mirador-icon-toc {
   overflow: auto;
 }
 .annotation-tooltip {
-  padding: 12px; 
+  padding: 12px;
 }
 .annotation-display {
   position:relative;
@@ -3782,7 +3782,7 @@ div.manifest-info a.mirador-btn.mirador-icon-toc {
   color: #222;
   border-radius: 6px;
   padding: 0 5px;
-  margin-right:5px; 
+  margin-right:5px;
   margin-bottom: 5px;
   text-align: center;
   font-size: 12;
@@ -3793,5 +3793,3 @@ div.manifest-info a.mirador-btn.mirador-icon-toc {
 .mce-edit-area iframe {
     height: 75px !important;
 }
-
-

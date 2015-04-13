@@ -25,17 +25,57 @@
       width: 234px;
       margin-top: -8px;
     }
-
-
+    #citation-modal p.header {
+      font-size: 115%;
+      font-weight: bold;
+    }
+    #citation-modal span.label {
+      font-weight: bold;
+    }
+    #citation-modal ul {
+      list-style: none inside none;
+    }
+    #citation-modal ul li {
+      margin-bottom: 0.5em;
+    }
+    #citation-modal p.header:after, #cite span.label:after {
+      content: ":";
+    }
   </style>
 </head>
 <body>
   <div id="viewer"></div>
-
   <script src="{% static 'manifests/m2/mirador.js' %}"></script>
   <script type="text/javascript">
     $(function() {
       var PDS_VIEW_URL = "{{ pds_view_url }}"
+
+      {% verbatim %}
+
+      var citationTmpl = Handlebars.compile([
+        '<div title="citation">',
+          '<p class="header">Resource</p>',
+          '<ul>',
+            '<li><span class="label plink">Persistent Link</span> <a href="{{{resource.urn}}}">{{resource.urn}}</a></li>',
+            '<li><span class="label desc">Description</span> {{resource.description}}</li>',
+            '<li><span class="label repo">Repository</span> {{resource.repository}}</li>',
+            '<li><span class="label inst">Institution</span> {{resource.institution}}</li>',
+            '<li><span class="label access">Accessed</span> {{resource.accessed}}</li>',
+          '</ul>',
+          '<p class="header">Page</p>',
+          '<ul>',
+            '<li><span class="label plink">Persistent Link</span> <a href="{{{resource.urn}}}">{{resource.urn}}</a></li>',
+            '<li><span class="label desc">Description</span> {{resource.description}}</li>',
+            '<li><span class="label page">Page</span> {{page.pagelabel}}</li>',
+            '<li><span class="label repo">Repository</span> {{resource.repository}}</li>',
+            '<li><span class="label inst">Institution</span> {{resource.institution}}</li>',
+            '<li><span class="label access">Accessed</span> {{resource.accessed}}</li>',
+          '</ul>',
+        '</div>'
+      ].join("\n"));
+
+      {% endverbatim %}
+
       Mirador({
         "id": "viewer",
         "layout": "1x1",
@@ -48,10 +88,13 @@
              "attributes": { "id": "help", "href": "http://nrs.harvard.edu/urn-3:hul.ois:hlviewerhelp"}},
             {"label": "View in PDS",
              "iconClass": "fa fa-external-link",
-             "attributes": { "id": "view-in-pds", "href": "#no-op"}}],
-	        "userLogo": {
-             "label": "Harvard Library",
-             "attributes": { "id": "harvard-bug", "href": "http://lib.harvard.edu"}}
+             "attributes": { "id": "view-in-pds", "href": "#no-op"}},
+            {"label": "Cite",
+             "iconClass": "fa fa-paper-plane",
+             "attributes": { "id": "cite", "href": "#no-op"}}],
+    	    "userLogo": {
+            "label": "Harvard Library",
+            "attributes": { "id": "harvard-bug", "href": "http://lib.harvard.edu"}}
         },
 
         "data": [
@@ -62,10 +105,9 @@
         ],
         "windowObjects":[
           { "loadedManifest": "{{ loadedUri }}",
-             "viewType": "ImageView" }
+            "viewType": "ImageView" }
         ]
       });
-
 
       $(document).on('click', '#view-in-pds', function (e) {
         e.preventDefault();
@@ -78,6 +120,42 @@
 
         if (drs_match && drs_match[1]){
           window.open(PDS_VIEW_URL + drs_match[1] + "?n=" + n);
+        }
+      });
+
+      $(document).on('click', '#cite', function (e) {
+        e.preventDefault();
+        var parts = window.location.pathname.split("/");
+        var last_idx = parts.length - 1;
+        var drs_match = parts[last_idx].match(/drs:(\d+)/);
+        var mWindow = Mirador.viewer.workspace.slots[0].window;
+        var focusType = mWindow.currentFocus;
+        var n = mWindow.focusModules[focusType].currentImgIndex + 1;
+
+        var $dialog = $('#citation-modal');
+
+        if ($dialog.get().length > 0) {
+          $dialog.dialog('close');
+        }
+        else if (drs_match && drs_match[1]) {
+          $dialog = $('<div id="citation-modal" style="display:none" />')
+          $.getJSON('//pdstest.lib.harvard.edu:9005/pds/cite/' + drs_match[1] + '?callback=?', {'n':n})
+            .done(function (data) {
+              if (data.citation) {
+                $dialog.html(citationTmpl(data.citation));
+                $dialog.appendTo('body');
+                $dialog.dialog({modal: true,
+                                draggable: false,
+                                resizable: false,
+                                width: "90%",
+                                classes: "qtip-bootstrap",
+                                title: "Citation",
+                                close: function (e,ui) {
+                                  $dialog.remove();},
+
+                               }).dialog('open');
+              }
+            });
         }
       });
     });
