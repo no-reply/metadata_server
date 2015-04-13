@@ -168,19 +168,6 @@ def get_mets(document_id, source, cookie=None):
     response_doc = response.read()
     return (True, response_doc)
 
-# IDS can only deep zoom on JP2 images
-def mets_jp2_check(document_id, cookie=None):
-    api_url = METS_API_URL+document_id
-    #response = urllib2.urlopen(api_url)
-    response = webclient.get(api_url, cookie)
-    response_doc = response.read()
-    # probably don't actually need to parse this as an XML document
-    # just look for this particular string in the response
-    if any([x in response_doc for x in ["<img_mimetype>jp2</img_mimetype>", "image/jp2"]]):
-        return True
-    else:
-        return False
-
 # Gets MODS XML from Presto API
 def get_mods(document_id, source, cookie=None):
     mods_url = MODS_DRS_URL+source+"/"+document_id
@@ -229,11 +216,6 @@ def get_manifest(document_id, source, force_refresh, host, cookie=None):
             ## TODO: check image types??
             (success, response) = get_mods(document_id, source, cookie)
         elif data_type == "mets":
-            # check if mets object has jp2 images, only those will work in image server
-            has_jp2 = mets_jp2_check(document_id, cookie)
-            if not has_jp2:
-                return (has_jp2, HttpResponse("The document ID %s does not have JP2 images" % document_id, status=404), document_id, source)
-
             (success, response) = get_mets(document_id, source, cookie)
         elif data_type == "huam":
             (success, response) = get_huam(document_id, source)

@@ -188,7 +188,7 @@ def main(data, document_id, source, host, cookie=None):
 
 	manifest_uri = manifestUriBase + "%s:%s" % (source, document_id)
 
-	images = dom.xpath('/mets:mets/mets:fileSec/mets:fileGrp/mets:file[@MIMETYPE="image/jp2"]', namespaces=XMLNS)
+	images = dom.xpath('/mets:mets/mets:fileSec/mets:fileGrp/mets:file[starts-with(@MIMETYPE, "image/")]', namespaces=XMLNS)
 	struct = dom.xpath('/mets:mets/mets:structMap/mets:div[@TYPE="CITATION"]/mets:div', namespaces=XMLNS)
 
 	# Check if the object has a stitched version(s) already made.  Use only those
@@ -234,6 +234,12 @@ def main(data, document_id, source, host, cookie=None):
 		#response = urllib2.urlopen(imageUriBase + cvs['image'] + imageInfoSuffix)
 		response = webclient.get(imageUriBase + cvs['image'] + imageInfoSuffix, cookie)
 		infojson = json.load(response)
+
+                if "gif" in infojson['formats']:
+                        fmt = "image/gif"
+                elif "jpg" in infojson['formats']:
+                        fmt = "image/jpeg"
+
 		cvsjson = {
 			"@id": manifest_uri + "/canvas/canvas-%s.json" % cvs['image'],
 			"@type": "sc:Canvas",
@@ -248,7 +254,7 @@ def main(data, document_id, source, host, cookie=None):
 					"resource": {
 						"@id": imageUriBase + cvs['image'] + imageUriSuffix,
 						"@type": "dcterms:Image",
-						"format":"image/jpeg",
+						"format": fmt,
 						"height": infojson['height'],
 						"width": infojson['width'],
 						"service": {
