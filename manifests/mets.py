@@ -153,7 +153,16 @@ def main(data, document_id, source, host, cookie=None):
 	if len(drs_check) > 0 and 'DRS2' in '\t'.join(drs_check):
 		isDrs1 = False
 
-	manifestLabel = dom.xpath('/mets:mets/@LABEL', namespaces=XMLNS)[0]
+	mets_label_candidates = dom.xpath('/mets:mets/@LABEL', namespaces=XMLNS)
+	if len(mets_label_candidates) > 0:
+		manifestLabel = mets_label_candidates[0]
+	else:
+		mods_title_candidates = dom.xpath('//mods:mods/mods:titleInfo/mods:title', namespaces=XMLNS)
+		if len(mods_title_candidates) > 0:
+			manifestLabel = mods_title_candidates[0].text
+		else:
+			manifestLabel = 'No Label'
+
 	manifestType = dom.xpath('/mets:mets/@TYPE', namespaces=XMLNS)[0]
 
 	if manifestType in ["PAGEDOBJECT", "PDS DOCUMENT"]:
