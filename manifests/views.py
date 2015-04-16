@@ -19,6 +19,7 @@ MODS_DRS_URL = "http://webservices.lib.harvard.edu/rest/MODS/"
 HUAM_API_URL = "http://api.harvardartmuseums.org/object/"
 HUAM_API_KEY = environ["HUAM_API_KEY"]
 COOKIE_DOMAIN = environ.get("COOKIE_DOMAIN", ".hul.harvard.edu")
+PDS_VIEW_URL = environ.get("PDS_VIEW_URL", "http://pds.lib.harvard.edu/pds/view/")
 
 sources = {"drs": "mets", "via": "mods", "hollis": "mods", "huam" : "huam"}
 
