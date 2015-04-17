@@ -62,7 +62,7 @@ def view(request, view_type, document_id):
         elif (view_type == "view-m2"):
             return render(request, 'manifests/m2.html', {'manifests' : manifests, 'loadedUri' : manifests.keys()[0]})
         else:
-            return render(request, 'manifests/manifest.html', {'manifests' : manifests, 'loadedUri' : manifests.keys()[0]}, 'pds_view_url': PDS_VIEW_URL)
+            return render(request, 'manifests/manifest.html', {'manifests' : manifests, 'loadedUri' : manifests.keys()[0], 'pds_view_url': PDS_VIEW_URL})
     else:
         return HttpResponse("The requested document ID(s) %s could not be displayed" % document_id, status=404) # 404 HttpResponse object
 
