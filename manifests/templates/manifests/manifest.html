@@ -58,7 +58,7 @@
           {% for uri, title in manifests.items %}
             { "manifestUri": "{{ uri }}", "location": "Harvard University", "title": "{{ title }}"},
           {% endfor %}
-          {% static 'manifests/demolinks.js' %}
+          {% include 'manifests/demolinks.js' %}
         ],
         "windowObjects":[
           { "loadedManifest": "{{ loadedUri }}",
