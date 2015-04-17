@@ -19,6 +19,7 @@ MODS_DRS_URL = "http://webservices.lib.harvard.edu/rest/MODS/"
 HUAM_API_URL = "http://api.harvardartmuseums.org/object/"
 HUAM_API_KEY = environ["HUAM_API_KEY"]
 COOKIE_DOMAIN = environ.get("COOKIE_DOMAIN", ".hul.harvard.edu")
+PDS_VIEW_URL = environ.get("PDS_VIEW_URL", "http://pds.lib.harvard.edu/pds/view/")
 
 sources = {"drs": "mets", "via": "mods", "hollis": "mods", "huam" : "huam"}
 
@@ -61,7 +62,7 @@ def view(request, view_type, document_id):
         elif (view_type == "view-m2"):
             return render(request, 'manifests/m2.html', {'manifests' : manifests, 'loadedUri' : manifests.keys()[0]})
         else:
-            return render(request, 'manifests/manifest.html', {'manifests' : manifests, 'loadedUri' : manifests.keys()[0]})
+            return render(request, 'manifests/manifest.html', {'manifests' : manifests, 'loadedUri' : manifests.keys()[0], 'pds_view_url': PDS_VIEW_URL})
     else:
         return HttpResponse("The requested document ID(s) %s could not be displayed" % document_id, status=404) # 404 HttpResponse object
 
