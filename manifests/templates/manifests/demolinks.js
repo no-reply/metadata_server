@@ -17,4 +17,4 @@
 { "manifestUri": "http://iiif.lib.harvard.edu/manifests/drs:47567737", "location": "Harvard University", "title": "Lyon, David Gordon, 1852-1935. Papers of David Gordon Lyon, 1861, 1871-1935. Diary, 1870-1871 Vol. 2"},
 { "manifestUri": "http://iiif.lib.harvard.edu/manifests/via:huam:182040", "location": "Harvard University", "title": "Cuneiform Inscribed Clay Nail: Early Dynastic IIIb Foundation Inscription of Entemena of Lagash"},
 { "manifestUri": "http://iiif.lib.harvard.edu/manifests/via:olvwork411464", "location": "Harvard University", "title": "Cuneiform tablet"},
-{ "manifestUrl": "http://iiif.lib.harvard.edu/manifests/view/drs:48660497", "location": "Harvard University", "title": "HLS MS 184, Harvard Law School Library. Statuta vetera, registrum brevium and tracts, late 13th or early 14th century"}
+{ "manifestUrl": "http://iiif.lib.harvard.edu/manifests/view/drs:48660497", "location": "Harvard University", "title": "HLS MS 184, Harvard Law School Library. Statuta vetera, registrum brevium and tracts, late 13th or early 14th century"},
