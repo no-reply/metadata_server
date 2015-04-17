@@ -35,7 +35,7 @@
   <script src="{% static 'manifests/m2/mirador.js' %}"></script>
   <script type="text/javascript">
     $(function() {
-      var PDS_VIEW_URL = "//pdstest.lib.harvard.edu:9005/pds/view/"
+      var PDS_VIEW_URL = "{{ pds_view_url }}"
       Mirador({
         "id": "viewer",
         "layout": "1x1",
@@ -58,6 +58,7 @@
           {% for uri, title in manifests.items %}
             { "manifestUri": "{{ uri }}", "location": "Harvard University", "title": "{{ title }}"},
           {% endfor %}
+          {% static 'manifests/demolinks.js' %}
         ],
         "windowObjects":[
           { "loadedManifest": "{{ loadedUri }}",
