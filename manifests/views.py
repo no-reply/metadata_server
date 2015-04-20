@@ -66,6 +66,10 @@ def view(request, view_type, document_id):
     else:
         return HttpResponse("The requested document ID(s) %s could not be displayed" % document_id, status=404) # 404 HttpResponse object
 
+# Demo URL - a canned list of manifests
+def demo(request):
+    return render(request, 'manifests/demo.html', {'pds_view_url' : PDS_VIEW_URL})
+
 # Returns a IIIF manifest of a METS, MODS or HUAM JSON object
 # Checks if DB has it, otherwise creates it
 def manifest(request, document_id):

@@ -3,6 +3,8 @@ from django.conf.urls import patterns, url
 from manifests import views
 
 urlpatterns = patterns('',
+    url(r'^demo$', views.demo, name='demo'),
+
     url(r'^(?P<view_type>view(-dev|-annotator|-m1|-m2)?)/(?P<document_id>([a-z]+:[A-Za-z\d]+;?)+)$', views.view, name='view'),
 
     url(r'^(?P<document_id>[a-z]+:[A-Za-z\d]+)$', views.manifest, name='manifest'),
