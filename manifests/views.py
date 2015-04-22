@@ -130,7 +130,7 @@ def refresh_by_source(request, source):
     document_ids = models.get_all_manifest_ids_with_type(source)
     counter = 0
     host = request.META['HTTP_HOST']
-    cookie = request.COOKIES('hulaccess', None)
+    cookie = request.COOKIES.get('hulaccess', None)
     for id in document_ids:
         (success, response_doc, real_id, real_source) = get_manifest(id, source, True,  host, cookie)
         if success:
