@@ -35,22 +35,44 @@ HOLLIS_PUBLIC_URL = "http://hollisclassic.harvard.edu/F?func=find-c&CCL_TERM=sys
  ## Add ISO639-2B language codes here where books are printed right-to-left (not just the language is read that way)
 right_to_left_langs = set(['ara','heb'])
 
+
+MIME_HIERARCHY = ['image/gif', 'image/jpeg', 'image/jp2', 'image/tiff']
+
+def get_display_image(fids):
+        """Goes through list of file IDs for a page, and returns the best choice for delivery (according to mime hierarchy)"""
+        def proc_fid(out, fid):
+                img = imageHash.get(fid, [])
+                if len(img) == 2:
+                        out[img["mime"]] = (img["img"], fid)
+                return out
+
+        versions = reduce(proc_fid, fids, {})
+        display_img = None
+        for mime in MIME_HIERARCHY:
+                display_img = versions.get(mime)
+                if display_img:
+                        break
+
+        return display_img
+
 def process_page(sd, rangeKey, new_ranges):
 	# first check if PAGE has label, otherwise get parents LABEL/ORDER
 	if 'LABEL' in sd.attrib:
 		label = sd.get('LABEL') + " (seq. {0})".format(sd.get("ORDER"))
 	else:
 		label = rangeKey + " (seq. {0})".format(sd.get("ORDER"))
-	for fid in sd.xpath('./mets:fptr/@FILEID', namespaces=XMLNS):
-		if fid in imageHash.keys():
-			info = {}
-			info['label'] = label
-			info['image'] = imageHash[fid]
-			if info not in canvasInfo:
+
+        display_image, fid = get_display_image(sd.xpath('./mets:fptr/@FILEID', namespaces=XMLNS))
+
+        if display_image:
+                info = {}
+                info['label'] = label
+                info['image'] = display_image
+                if info not in canvasInfo:
 				canvasInfo.append(info)
-			range = {}
-			range[label] = imageHash[fid]
-			new_ranges.append(range)
+                                range = {}
+                                range[label] = imageHash[fid]["img"]
+                                new_ranges.append(range)
 
 def process_struct_map(div, ranges):
 	if 'LABEL' in div.attrib:
@@ -197,12 +219,8 @@ def main(data, document_id, source, host, cookie=None):
 
 	manifest_uri = manifestUriBase + "%s:%s" % (source, document_id)
 
-	images = dom.xpath('/mets:mets/mets:fileSec/mets:fileGrp/mets:file[starts-with(@MIMETYPE, "image/jp")]', namespaces=XMLNS)
-        # HAX: Until such time as we have universal jp2s, if there's no jp2/jpegs, grab WHATEVER
-        if len(images) == 0:
-                images = dom.xpath('/mets:mets/mets:fileSec/mets:fileGrp/mets:file[starts-with(@MIMETYPE, "image/")]', namespaces=XMLNS)
-
-	struct = dom.xpath('/mets:mets/mets:structMap/mets:div[@TYPE="CITATION"]/mets:div', namespaces=XMLNS)
+	images = dom.xpath('/mets:mets/mets:fileSec/mets:fileGrp/mets:file[starts-with(@MIMETYPE, "image/")]', namespaces=XMLNS)
+        struct = dom.xpath('/mets:mets/mets:structMap/mets:div[@TYPE="CITATION"]/mets:div', namespaces=XMLNS)
 
 	# Check if the object has a stitched version(s) already made.  Use only those
 	for st in struct:
@@ -212,7 +230,7 @@ def main(data, document_id, source, host, cookie=None):
 			break
 
 	for img in images:
-		imageHash[img.xpath('./@ID', namespaces=XMLNS)[0]] = img.xpath('./mets:FLocat/@xlink:href', namespaces = XMLNS)[0]
+		imageHash[img.xpath('./@ID', namespaces=XMLNS)[0]] = {"img": img.xpath('./mets:FLocat/@xlink:href', namespaces = XMLNS)[0], "mime": img.attrib['MIMETYPE']}
 
 	rangeList = []
 	rangeInfo = []
@@ -244,7 +262,6 @@ def main(data, document_id, source, host, cookie=None):
 
 	canvases = []
 	for cvs in canvasInfo:
-		#response = urllib2.urlopen(imageUriBase + cvs['image'] + imageInfoSuffix)
 		response = webclient.get(imageUriBase + cvs['image'] + imageInfoSuffix, cookie)
 		infojson = json.load(response)
 
