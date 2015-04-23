@@ -53,7 +53,7 @@ def get_display_image(fids):
                 if display_img:
                         break
 
-        return display_img
+        return display_img or (None, None)
 
 def process_page(sd, rangeKey, new_ranges):
 	# first check if PAGE has label, otherwise get parents LABEL/ORDER
