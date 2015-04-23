@@ -1,2 +1,10 @@
 *~
 *.pyc
+/.env
+/db.sqlite3
+/log/*
+/debug.log
+
+# Virtualenv stuff
+/virtualenv
+
