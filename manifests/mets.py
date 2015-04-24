@@ -197,7 +197,11 @@ def main(data, document_id, source, host, cookie=None):
 
 	manifest_uri = manifestUriBase + "%s:%s" % (source, document_id)
 
-	images = dom.xpath('/mets:mets/mets:fileSec/mets:fileGrp/mets:file[starts-with(@MIMETYPE, "image/")]', namespaces=XMLNS)
+	images = dom.xpath('/mets:mets/mets:fileSec/mets:fileGrp/mets:file[starts-with(@MIMETYPE, "image/jp")]', namespaces=XMLNS)
+        # HAX: Until such time as we have universal jp2s, if there's no jp2/jpegs, grab WHATEVER
+        if len(images) == 0:
+                images = dom.xpath('/mets:mets/mets:fileSec/mets:fileGrp/mets:file[starts-with(@MIMETYPE, "image/")]', namespaces=XMLNS)
+
 	struct = dom.xpath('/mets:mets/mets:structMap/mets:div[@TYPE="CITATION"]/mets:div', namespaces=XMLNS)
 
 	# Check if the object has a stitched version(s) already made.  Use only those

@@ -66,6 +66,10 @@ def view(request, view_type, document_id):
     else:
         return HttpResponse("The requested document ID(s) %s could not be displayed" % document_id, status=404) # 404 HttpResponse object
 
+# Demo URL - a canned list of manifests
+def demo(request):
+    return render(request, 'manifests/demo.html', {'pds_view_url' : PDS_VIEW_URL})
+
 # Returns a IIIF manifest of a METS, MODS or HUAM JSON object
 # Checks if DB has it, otherwise creates it
 def manifest(request, document_id):
@@ -126,7 +130,7 @@ def refresh_by_source(request, source):
     document_ids = models.get_all_manifest_ids_with_type(source)
     counter = 0
     host = request.META['HTTP_HOST']
-    cookie = request.COOKIES('hulaccess', None)
+    cookie = request.COOKIES.get('hulaccess', None)
     for id in document_ids:
         (success, response_doc, real_id, real_source) = get_manifest(id, source, True,  host, cookie)
         if success:
