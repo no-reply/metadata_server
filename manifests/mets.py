@@ -35,14 +35,16 @@ HOLLIS_PUBLIC_URL = "http://hollisclassic.harvard.edu/F?func=find-c&CCL_TERM=sys
  ## Add ISO639-2B language codes here where books are printed right-to-left (not just the language is read that way)
 right_to_left_langs = set(['ara','heb'])
 
-
-MIME_HIERARCHY = ['image/gif', 'image/jpeg', 'image/jp2', 'image/tiff']
+# List of mime types: ordering is as defined in pdx_util (internalMets.java), but with txt representations omitted.
+MIME_HIERARCHY = ['image/jp2', 'image/jpx', 'image/jpeg', 'image/gif', 'image/tiff']
 
 def get_display_image(fids):
-        """Goes through list of file IDs for a page, and returns the best choice for delivery (according to mime hierarchy)"""
+        """Goes through list of file IDs for a page, and returns the best choice for delivery (according to mime hierarchy)."""
+
         def proc_fid(out, fid):
+                """Internal fn mapped over all images. Sets first image of each mime-type in out hash."""
                 img = imageHash.get(fid, [])
-                if len(img) == 2:
+                if len(img) == 2 and not out.get(img["mime"]):
                         out[img["mime"]] = (img["img"], fid)
                 return out
 
