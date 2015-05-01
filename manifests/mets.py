@@ -44,7 +44,7 @@ def get_display_image(fids):
         def proc_fid(out, fid):
                 """Internal fn mapped over all images. Sets first image of each mime-type in out hash."""
                 img = imageHash.get(fid, [])
-                if len(img) == 2 and not out.get(img["mime"]):
+                if len(img) == 2:
                         out[img["mime"]] = (img["img"], fid)
                 return out
 
