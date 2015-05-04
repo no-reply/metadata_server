@@ -18,6 +18,7 @@ XMLNS = {
 imageHash = {}
 canvasInfo = []
 rangesJsonList = []
+seq_statements = {}
 manifestUriBase = ""
 
 ## TODO: Other image servers?
@@ -76,10 +77,33 @@ def process_page(sd, rangeKey, new_ranges):
                                 range[label] = imageHash[fid]["img"]
                                 new_ranges.append(range)
 
-def process_intermediate(sd, rangekey, new_ranges):
-        pass
+def process_intermediate(subdivs, rangeKey):
+        """Processes intermediate divs in the structMap.
+        Side effect: stores seq_statements for intermediate divs as part of operation."""
+
+        new_ranges = []
+
+        # Generate a sequence statement for subdiv
+        f,l = get_intermediate_seq_values(subdivs[0], subdivs[-1])
+        seq_statements[rangeKey] = "(seq. {0})".format(f) if f == l else "(seq. {0}-{1})".format(f,l)
+
+        for sd in subdivs:
+                # leaf node, get canvas info
+                if 'TYPE' in sd.attrib and sd.get("TYPE") == 'PAGE':
+                        process_page(sd, rangeKey, new_ranges)
+                else:
+                        new_ranges.extend(process_struct_map(sd, []))
+        # this is for the books where every single page is labeled (like Book of Hours)
+        # most books do not do this
+        if len(new_ranges) == 1:
+                range_dict = new_ranges[0]
+                new_ranges = range_dict.get(range_dict.keys()[0])
+
+        return new_ranges
 
 def get_intermediate_seq_values(first, last):
+        """Gets bookend values for constructing (seq. N-M) range display."""
+
         if first.get('TYPE') == 'PAGE':
                 first_val = first.get('ORDER')
         else:
@@ -109,22 +133,7 @@ def process_struct_map(div, ranges):
 
 	subdivs = div.xpath('./mets:div', namespaces = XMLNS)
 	if len(subdivs) > 0:
-		new_ranges = []
-                f,l = get_intermediate_seq_values(subdivs[0], subdivs[-1])
-                seq_statement =  "(seq. {0})".format(f) if f == l else "(seq. {0}-{1})".format(f,l)
-                rangeKey = " ".join((rangeKey, seq_statement))
-
-		for sd in subdivs:
-			# leaf node, get canvas info
-			if 'TYPE' in sd.attrib and sd.get("TYPE") == 'PAGE':
-				process_page(sd, rangeKey, new_ranges)
-			else:
-				new_ranges.extend(process_struct_map(sd, []))
-		# this is for the books where every single page is labeled (like Book of Hours)
-		# most books do not do this
-		if len(new_ranges) == 1:
-			range_dict = new_ranges[0]
-			new_ranges = range_dict.get(range_dict.keys()[0])
+                new_ranges = process_intermediate(subdivs, rangeKey)
 		ranges.append({rangeKey : new_ranges})
 	return ranges
 
@@ -168,14 +177,14 @@ def create_ranges(ranges, previous_id, manifest_uri):
 	counter = 0
 	for ri in ranges:
 		counter = counter + 1
-		label = ri.keys()[0]
+		label = "{0} {1}".format(ri.keys()[0], seq_statements.get(ri.keys()[0], ""))
 		if previous_id == manifest_uri:
 			# these are for the top level divs
 			range_id = manifest_uri + "/range/range-%s.json" % counter
 		else:
 			# otherwise, append the counter to the parent's id
 			range_id = previous_id[0:previous_id.rfind('.json')] + "-%s.json" % counter
-		new_ranges = ri.get(label)
+		new_ranges = ri.get(ri.keys()[0])
 		create_range_json(new_ranges, manifest_uri, range_id, previous_id, label)
 		create_ranges(new_ranges, range_id, manifest_uri)
 
