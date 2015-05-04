@@ -76,6 +76,22 @@ def process_page(sd, rangeKey, new_ranges):
                                 range[label] = imageHash[fid]["img"]
                                 new_ranges.append(range)
 
+def process_intermediate(sd, rangekey, new_ranges):
+        pass
+
+def get_intermediate_seq_values(first, last):
+        if first.get('TYPE') == 'PAGE':
+                first_val = first.get('ORDER')
+        else:
+                first_val, _ = get_intermediate_seq_values(first[0],first[-1])
+
+        if last.get('TYPE') == 'PAGE':
+                last_val = last.get('ORDER')
+        else:
+                _, last_val = get_intermediate_seq_values(last[0], last[-1])
+
+        return first_val, last_val
+
 def process_struct_map(div, ranges):
 	if 'LABEL' in div.attrib:
 		rangeKey = div.get('LABEL')
@@ -94,6 +110,10 @@ def process_struct_map(div, ranges):
 	subdivs = div.xpath('./mets:div', namespaces = XMLNS)
 	if len(subdivs) > 0:
 		new_ranges = []
+                f,l = get_intermediate_seq_values(subdivs[0], subdivs[-1])
+                seq_statement =  "(seq. {0})".format(f) if f == l else "(seq. {0}-{1})".format(f,l)
+                rangeKey = " ".join((rangeKey, seq_statement))
+
 		for sd in subdivs:
 			# leaf node, get canvas info
 			if 'TYPE' in sd.attrib and sd.get("TYPE") == 'PAGE':
