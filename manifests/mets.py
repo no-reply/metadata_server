@@ -19,7 +19,7 @@ imageHash = {}
 canvasInfo = []
 rangesJsonList = []
 seq_statements = {}
-manifestUriBase = ""
+manifestUriBase = u""
 
 ## TODO: Other image servers?
 imageUriBase = settings.IIIF['imageUriBase']
@@ -177,7 +177,7 @@ def create_ranges(ranges, previous_id, manifest_uri):
 	counter = 0
 	for ri in ranges:
 		counter = counter + 1
-		label = "{0} {1}".format(ri.keys()[0], seq_statements.get(ri.keys()[0], ""))
+		label = u"{0} {1}".format(ri.keys()[0], seq_statements.get(ri.keys()[0], u""))
 		if previous_id == manifest_uri:
 			# these are for the top level divs
 			range_id = manifest_uri + "/range/range-%s.json" % counter
@@ -228,7 +228,7 @@ def main(data, document_id, source, host, cookie=None):
 	## TODO: top to bottom and bottom to top viewing directions
 	## TODO: add Finding Aid links
 	viewingDirection = 'left-to-right' # default
-	seeAlso = ""
+	seeAlso = u""
 	if isDrs1:
 		hollisCheck = dom.xpath('/mets:mets/mets:dmdSec/mets:mdWrap/mets:xmlData/mods:mods/mods:identifier[@type="hollis"]/text()', namespaces=XMLNS)
 	else:
@@ -288,7 +288,7 @@ def main(data, document_id, source, host, cookie=None):
 		"structures": []
 	}
 
-	if (seeAlso != ""):
+	if (seeAlso != u""):
 		mfjson["seeAlso"] = seeAlso
 
 	canvases = []
