@@ -115,9 +115,9 @@ def get_rangeKey(div):
                 display_ss = ""
                 if f["page"] and l["page"]:
                         if f["page"] == l["page"]:
-                                display_ss = "p. {0} ".format(f["page"])
+                                display_ss = ", p. {0} ".format(f["page"])
                         else:
-                                display_ss ="pp. {0}-{1} ".format(f["page"], l["page"])
+                                display_ss =", pp. {0}-{1} ".format(f["page"], l["page"])
 
                 return label + \
                         display_ss + \
