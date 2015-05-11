@@ -58,7 +58,7 @@ def get_display_image(fids):
 
         return display_img or (None, None)
 
-def process_page(sd, rangeKey, new_ranges):
+def process_page(sd):
 	# first check if PAGE has label, otherwise get parents LABEL/ORDER
         label = get_rangeKey(sd)
 
@@ -70,10 +70,10 @@ def process_page(sd, rangeKey, new_ranges):
                 info['image'] = display_image
                 if info not in canvasInfo:
 				canvasInfo.append(info)
-                                range = {}
-                                range[label] = imageHash[fid]["img"]
+                                my_range = {}
+                                my_range[label] = imageHash[fid]["img"]
 
-        return range
+        return my_range
 
 def is_page(div):
         return 'TYPE' in div.attrib and div.get('TYPE') == 'PAGE'
@@ -132,11 +132,11 @@ def process_intermediate(subdivs, rangeKey, new_ranges=None):
         for sd in subdivs:
                 # leaf node, get canvas info
                 if is_page(sd):
-                        p_range = process_page(sd, rangeKey, new_ranges)
+                        p_range = process_page(sd)
                         if p_range:
                                 new_ranges.append(p_range)
                 else:
-                        new_ranges.extend(process_intermediate_divs(sd, get_rangeKey(sd)))
+                        new_ranges.extend(process_intermediate_divs(sd))
         # this is for the books where every single page is labeled (like Book of Hours)
         # most books do not do this
         if len(new_ranges) == 1:
@@ -179,12 +179,9 @@ def process_struct_divs(div, ranges):
 
 	# when the top level div is a PAGE
 	if 'TYPE' in div.attrib and div.get("TYPE") == 'PAGE':
-		new_ranges = []
-		process_page(div, rangeKey, new_ranges)
-		if len(new_ranges) == 1:
-			range_dict = new_ranges[0]
-			new_ranges = range_dict.get(range_dict.keys()[0])
-		ranges.append({rangeKey : new_ranges})
+		p_range = process_page(div)
+                if p_range:
+                        ranges.append({rangeKey : p_range})
         else:
                 subdivs = div.xpath('./mets:div', namespaces = XMLNS)
                 if len(subdivs) > 0:
