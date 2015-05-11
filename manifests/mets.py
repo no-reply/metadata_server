@@ -18,7 +18,6 @@ XMLNS = {
 imageHash = {}
 canvasInfo = []
 rangesJsonList = []
-seq_statements = {}
 manifestUriBase = u""
 
 ## TODO: Other image servers?
@@ -124,8 +123,7 @@ def get_rangeKey(div):
                         "(seq. {0})".format(f["seq"]) if f["seq"] == l["seq"] else "(seq. {0}-{1})".format(f["seq"], l["seq"])
 
 def process_intermediate(subdivs, rangeKey, new_ranges=None):
-        """Processes intermediate divs in the structMap.
-        Side effect: stores seq_statements for intermediate divs as part of operation."""
+        """Processes intermediate divs in the structMap."""
 
         new_ranges = new_ranges or []
 
@@ -240,14 +238,14 @@ def create_ranges(ranges, previous_id, manifest_uri):
 	counter = 0
 	for ri in ranges:
 		counter = counter + 1
-		label = u"{0} {1}".format(ri.keys()[0], seq_statements.get(ri.keys()[0], u""))
+		label = ri.keys()[0]
 		if previous_id == manifest_uri:
 			# these are for the top level divs
 			range_id = manifest_uri + "/range/range-%s.json" % counter
 		else:
 			# otherwise, append the counter to the parent's id
 			range_id = previous_id[0:previous_id.rfind('.json')] + "-%s.json" % counter
-		new_ranges = ri.get(ri.keys()[0])
+		new_ranges = ri.get(label)
 		create_range_json(new_ranges, manifest_uri, range_id, previous_id, label)
 		create_ranges(new_ranges, range_id, manifest_uri)
 
