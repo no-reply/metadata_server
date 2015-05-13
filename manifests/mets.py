@@ -63,6 +63,8 @@ def process_page(sd):
 
         display_image, fid = get_display_image(sd.xpath('./mets:fptr/@FILEID', namespaces=XMLNS))
 
+        my_range = None
+
         if display_image:
                 info = {}
                 info['label'] = label
