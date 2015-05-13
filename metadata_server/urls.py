@@ -11,4 +11,7 @@ urlpatterns = patterns('',
     url(r'^manifests/', include('manifests.urls')),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^demo$', views.demo, name="demo"),
+    # Same terrible hack from manifests/urls.py, empty view_type is NON OPTIONAL
+    url(r'^(?P<view_type>)images/(?P<filename>.*)$', views.get_image),
+    url(r'^(?P<view_type>)+.*skins.*$', views.clean_url),
 )
