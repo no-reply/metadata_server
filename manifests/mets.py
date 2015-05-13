@@ -136,7 +136,7 @@ def process_intermediate(subdivs, rangeKey, new_ranges=None):
                         if p_range:
                                 new_ranges.append(p_range)
                 else:
-                        new_ranges.extend(process_intermediate(sd))
+                        new_ranges.extend(process_intermediate(sd), get_rangeKey(sd))
         # this is for the books where every single page is labeled (like Book of Hours)
         # most books do not do this
         if len(new_ranges) == 1:
