@@ -63,6 +63,8 @@ def process_page(sd):
 
         display_image, fid = get_display_image(sd.xpath('./mets:fptr/@FILEID', namespaces=XMLNS))
 
+        my_range = None
+
         if display_image:
                 info = {}
                 info['label'] = label
@@ -134,7 +136,7 @@ def process_intermediate(subdivs, rangeKey, new_ranges=None):
                         if p_range:
                                 new_ranges.append(p_range)
                 else:
-                        new_ranges.extend(process_intermediate_divs(sd))
+                        new_ranges.extend(process_intermediate(sd, get_rangeKey(sd)))
         # this is for the books where every single page is labeled (like Book of Hours)
         # most books do not do this
         if len(new_ranges) == 1:
