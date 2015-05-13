@@ -136,7 +136,7 @@ def process_intermediate(div, new_ranges=None):
                 else:
                         my_range = process_intermediate(sd)
                 if my_range:
-                        new_ranges.append(p_range)
+                        new_ranges.append(my_range)
 
         # this is for the books where every single page is labeled (like Book of Hours)
         # most books do not do this
