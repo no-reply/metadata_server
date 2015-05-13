@@ -124,7 +124,7 @@ def get_rangeKey(div):
                         display_ss + \
                         "(seq. {0})".format(f["seq"]) if f["seq"] == l["seq"] else "(seq. {0}-{1})".format(f["seq"], l["seq"])
 
-def process_intermediate(subdivs, rangeKey, new_ranges=None):
+def process_intermediate(subdivs, new_ranges=None):
         """Processes intermediate divs in the structMap."""
 
         new_ranges = new_ranges or []
@@ -136,7 +136,7 @@ def process_intermediate(subdivs, rangeKey, new_ranges=None):
                         if p_range:
                                 new_ranges.append(p_range)
                 else:
-                        new_ranges.extend(process_intermediate(sd, get_rangeKey(sd)))
+                        new_ranges.extend({get_rangeKey(sd): process_intermediate(sd)})
         # this is for the books where every single page is labeled (like Book of Hours)
         # most books do not do this
         if len(new_ranges) == 1:
@@ -185,7 +185,7 @@ def process_struct_divs(div, ranges):
         else:
                 subdivs = div.xpath('./mets:div', namespaces = XMLNS)
                 if len(subdivs) > 0:
-                        new_ranges = process_intermediate(subdivs, get_rangeKey(div))
+                        new_ranges = process_intermediate(div)
                         ranges.append({rangeKey: new_ranges})
 
 	return ranges
