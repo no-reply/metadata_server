@@ -179,12 +179,12 @@ def process_struct_divs(div, ranges):
 	if 'TYPE' in div.attrib and div.get("TYPE") == 'PAGE':
 		p_range = process_page(div)
                 if p_range:
-                        ranges.append({rangeKey : p_range})
+                        ranges.append(p_range)
         else:
                 subdivs = div.xpath('./mets:div', namespaces = XMLNS)
                 if len(subdivs) > 0:
                         new_ranges = process_intermediate(subdivs, get_rangeKey(div))
-                        ranges.append({rangeKey : new_ranges})
+                        ranges.append({rangeKey: new_ranges})
 
 	return ranges
 
