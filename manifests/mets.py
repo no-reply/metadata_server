@@ -124,26 +124,27 @@ def get_rangeKey(div):
                         display_ss + \
                         "(seq. {0})".format(f["seq"]) if f["seq"] == l["seq"] else "(seq. {0}-{1})".format(f["seq"], l["seq"])
 
-def process_intermediate(subdivs, new_ranges=None):
+def process_intermediate(div, new_ranges=None):
         """Processes intermediate divs in the structMap."""
 
         new_ranges = new_ranges or []
 
-        for sd in subdivs:
+        for sd in div:
                 # leaf node, get canvas info
                 if is_page(sd):
-                        p_range = process_page(sd)
-                        if p_range:
-                                new_ranges.append(p_range)
+                        my_range = process_page(sd)
                 else:
-                        new_ranges.extend({get_rangeKey(sd): process_intermediate(sd)})
+                        my_range = process_intermediate(sd)
+                if my_range:
+                        new_ranges.append(p_range)
+
         # this is for the books where every single page is labeled (like Book of Hours)
         # most books do not do this
         if len(new_ranges) == 1:
                 range_dict = new_ranges[0]
                 new_ranges = range_dict.get(range_dict.keys()[0])
 
-        return new_ranges
+        return {get_rangeKey(div): new_ranges}
 
 
 # Get page number from ORDERLABEL or, failing that, LABEL, or, failing that, return None
@@ -178,15 +179,14 @@ def process_struct_divs(div, ranges):
 	rangeKey = get_rangeKey(div)
 
 	# when the top level div is a PAGE
-	if 'TYPE' in div.attrib and div.get("TYPE") == 'PAGE':
+	if is_page(div):
 		p_range = process_page(div)
                 if p_range:
                         ranges.append(p_range)
         else:
                 subdivs = div.xpath('./mets:div', namespaces = XMLNS)
                 if len(subdivs) > 0:
-                        new_ranges = process_intermediate(div)
-                        ranges.append({rangeKey: new_ranges})
+                        ranges.append(process_intermediate(div))
 
 	return ranges
 
