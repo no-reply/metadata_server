@@ -141,7 +141,8 @@ def process_intermediate(div, new_ranges=None):
         # this is for the books where every single page is labeled (like Book of Hours)
         # most books do not do this
         if len(new_ranges) == 1:
-                return new_ranges[0]
+
+                return {get_rangeKey(div): new_ranges.values()[0]}
 
         return {get_rangeKey(div): new_ranges}
 
