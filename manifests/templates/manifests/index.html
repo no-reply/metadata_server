@@ -9,9 +9,7 @@
   <h1>Index of Manifests</h1>
   <ul>
     {% for m in manifests %}
-      {% for uri, title in m %}
-        <li><a href="{{uri}}">{{title}}</a></li>
-      {% endfor %}
+      <li><a href="{{m.uri}}">{{m.title}}</a></li>
     {% endfor %}
   </ul>
 </body>
