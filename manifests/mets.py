@@ -117,14 +117,15 @@ def get_rangeKey(div):
                 f, l = get_intermediate_seq_values(div[0], div[-1])
                 display_ss = ""
                 if f["page"] and l["page"]:
+                        label += ","
                         if f["page"] == l["page"]:
-                                display_ss = ", p. {0} ".format(f["page"])
+                                display_ss = "p. {0} ".format(f["page"])
                         else:
                                 display_ss =", pp. {0}-{1} ".format(f["page"], l["page"])
 
-                return label + \
-                        display_ss + \
-                        ("(seq. {0})".format(f["seq"]) if f["seq"] == l["seq"] else "(seq. {0}-{1})".format(f["seq"], l["seq"]))
+                return " ".join(filter(None, [label,
+                                              display_ss,
+                                              "(seq. {0})".format(f["seq"]) if f["seq"] == l["seq"] else "(seq. {0}-{1})".format(f["seq"], l["seq"])]))
 
 def process_intermediate(div, new_ranges=None):
         """Processes intermediate divs in the structMap."""
