@@ -1,0 +1,17 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>Manifests Index</title>
+</head>
+<body>
+  <h1>Index of Manifests</h1>
+  <ul>
+    {% for m in manifests %}
+      {% for uri, title in m %}
+        <li><a href="{{uri}}">{{title}}</a></li>
+      {% endfor %}
+    {% endfor %}
+  </ul>
+</body>
