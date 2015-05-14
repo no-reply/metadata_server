@@ -90,22 +90,24 @@ page_re = re.compile(r"[pP](?:age|\.) \[?(\d+)\]?")
 def get_rangeKey(div):
         if is_page(div):
                 label = div.get('LABEL', "").strip()
-                oLabel = div.get('ORDERLABEL', "").strip()
+                pn = page_num(div)
                 seq = div.get('ORDER')
                 seq_s = "(seq. {0})".format(seq)
                 if label:
-                        match = page_re.match(label)
+                        match = page_re.search(label)
                         pn_from_label = match and match.group(1)
+
+
                 # Both label and orderlabel exist and are not empty
-                if div.get('LABEL') and div.get('ORDERLABEL'):
+                if label and pn:
                         # ORDERLABEL duplicates info in LABEL
-                        if pn_from_label or oLabel.lower() in label.lower():
+                        if pn == pn_from_label:
                                 return "{0} {1}".format(label, seq_s)
                         else:
-                                return "{0}, p. {1} {2}".format(label, pn_from_label, seq_s)
-                elif not label and oLabel:
-                        return "p. {0} {2}".format(oLabel, seq_s)
-                elif label and not oLabel:
+                                return "{0}, p. {1} {2}".format(label, pn, seq_s)
+                elif not label and pn:
+                        return "p. {0} {2}".format(pn, seq_s)
+                elif label and not pn:
                         return "{0} {1}".format(label, seq_s)
                 else:
                         return seq_s
@@ -122,7 +124,7 @@ def get_rangeKey(div):
 
                 return label + \
                         display_ss + \
-                        "(seq. {0})".format(f["seq"]) if f["seq"] == l["seq"] else "(seq. {0}-{1})".format(f["seq"], l["seq"])
+                        ("(seq. {0})".format(f["seq"]) if f["seq"] == l["seq"] else "(seq. {0}-{1})".format(f["seq"], l["seq"]))
 
 def process_intermediate(div, new_ranges=None):
         """Processes intermediate divs in the structMap."""
@@ -152,7 +154,7 @@ def page_num(div):
         if 'ORDERLABEL' in div.attrib:
                 return div.get('ORDERLABEL')
         else:
-                match = page_re.match(div.get('LABEL', ''))
+                match = page_re.search(div.get('LABEL', ''))
                 return match and match.group(1)
 
 def get_intermediate_seq_values(first, last):
