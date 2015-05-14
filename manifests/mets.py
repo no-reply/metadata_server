@@ -142,7 +142,7 @@ def process_intermediate(div, new_ranges=None):
         # most books do not do this
         if len(new_ranges) == 1:
 
-                return {get_rangeKey(div): new_ranges.values()[0]}
+                return {get_rangeKey(div): new_ranges[0].values()[0]}
 
         return {get_rangeKey(div): new_ranges}
 
