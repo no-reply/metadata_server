@@ -23,6 +23,13 @@ PDS_VIEW_URL = environ.get("PDS_VIEW_URL", "http://pds.lib.harvard.edu/pds/view/
 
 sources = {"drs": "mets", "via": "mods", "hollis": "mods", "huam" : "huam"}
 
+def index(request, source=None):
+    document_ids = models.get_all_manifest_ids_with_type(source) if source else models.get_all_manifest_ids()
+    host = request.META['HTTP_HOST']
+    cookie = request.COOKIES.get('hulaccess', None)
+    manifests = ({"%s/manifests/view/%s" % (host, d_id): models.get_manifest_title(d_id, source)} for d_id in document_ids)
+    return render(request, 'manifests/index.html', {'manifests': manifests})
+
 # view any number of MODS, METS, or HUAM objects
 def view(request, view_type, document_id):
     doc_ids = document_id.split(';')
