@@ -1,10 +1,10 @@
 from django.conf.urls import patterns, url
+from django.conf import settings
 
 from manifests import views
 
 urlpatterns = patterns('',
     url(r'^demo$', views.demo, name='demo'),
-    url(r'^index(?:/(?P<source>[a-zA-z]+))?/$', views.index, name="index"),
     url(r'^(?P<view_type>view(-dev|-annotator|-m1|-m2)?)/(?P<document_id>([a-z]+:[A-Za-z\d]+;?)+)$', views.view, name='view'),
 
     url(r'^(?P<document_id>[a-z]+:[A-Za-z\d]+)$', views.manifest, name='manifest'),
@@ -20,3 +20,5 @@ urlpatterns = patterns('',
    url(r'^(?P<view_type>view(-dev|-annotator|-m1|-m2)?)/images/(?P<filename>.*)$', views.get_image),
     url(r'^(?P<view_type>view(-dev|-annotator|-m1|-m2)?)/+.*skins.*$', views.clean_url),
 )
+if settings.DEBUG:
+    urlpatterns += patterns('', url(r'^index(?:/(?P<source>[a-zA-z]+))?/$', views.index, name="index"))
