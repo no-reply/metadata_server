@@ -63,12 +63,6 @@ def view(request, view_type, document_id):
         # Check if its an experimental/dev Mirador codebase, otherwise use production
         if (view_type == "view-dev"):
             return render(request, 'manifests/dev.html', {'manifests' : manifests})
-        elif (view_type == "view-annotator"):
-            return render(request, 'manifests/annotator.html', {'manifests' : manifests})
-        elif (view_type == "view-m1"):
-            return render(request, 'manifests/m1.html', {'manifests' : manifests})
-        elif (view_type == "view-m2"):
-            return render(request, 'manifests/m2.html', {'manifests' : manifests, 'loadedUri' : manifests.keys()[0]})
         else:
             return render(request, 'manifests/manifest.html', {'manifests' : manifests, 'loadedUri' : manifests.keys()[0], 'pds_view_url': PDS_VIEW_URL})
     else:
