@@ -31,7 +31,7 @@ profileLevel = settings.IIIF['profileLevel']
 attribution = "Provided by Harvard University"
 
 HOLLIS_API_URL = "http://webservices.lib.harvard.edu/rest/MODS/hollis/"
-HOLLIS_PUBLIC_URL = "http://hollisclassic.harvard.edu/F?func=find-c&CCL_TERM=sys="
+HOLLIS_PUBLIC_URL = "http://id.lib.harvard.edu/aleph/{0}/catalog"
  ## Add ISO639-2B language codes here where books are printed right-to-left (not just the language is read that way)
 right_to_left_langs = set(['ara','heb'])
 
@@ -302,7 +302,7 @@ def main(data, document_id, source, host, cookie=None):
 		hollisCheck = dom.xpath('/mets:mets/mets:amdSec//hulDrsAdmin:hulDrsAdmin/hulDrsAdmin:drsObject/hulDrsAdmin:harvardMetadataLinks/hulDrsAdmin:metadataIdentifier[../hulDrsAdmin:metadataType/text()="Aleph"]/text()', namespaces=XMLNS)
 	if len(hollisCheck) > 0:
 		hollisID = hollisCheck[0].strip()
-		seeAlso = HOLLIS_PUBLIC_URL+hollisID
+		seeAlso = HOLLIS_PUBLIC_URL.format(hollisID.rjust(9,"0"))
 		#response = urllib2.urlopen(HOLLIS_API_URL+hollisID).read()
 		response = webclient.get(HOLLIS_API_URL+hollisID, cookie).read()
 		mods_dom = etree.XML(response)
