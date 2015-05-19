@@ -31,7 +31,7 @@ profileLevel = settings.IIIF['profileLevel']
 attribution = "Provided by Harvard University"
 
 HOLLIS_API_URL = "http://webservices.lib.harvard.edu/rest/MODS/hollis/"
-HOLLIS_PUBLIC_URL = "http://hollisclassic.harvard.edu/F?func=find-c&CCL_TERM=sys="
+HOLLIS_PUBLIC_URL = "http://id.lib.harvard.edu/aleph/{0}/catalog"
  ## Add ISO639-2B language codes here where books are printed right-to-left (not just the language is read that way)
 right_to_left_langs = set(['ara','heb'])
 
@@ -90,22 +90,24 @@ page_re = re.compile(r"[pP](?:age|\.) \[?(\d+)\]?")
 def get_rangeKey(div):
         if is_page(div):
                 label = div.get('LABEL', "").strip()
-                oLabel = div.get('ORDERLABEL', "").strip()
+                pn = page_num(div)
                 seq = div.get('ORDER')
                 seq_s = "(seq. {0})".format(seq)
                 if label:
-                        match = page_re.match(label)
+                        match = page_re.search(label)
                         pn_from_label = match and match.group(1)
+
+
                 # Both label and orderlabel exist and are not empty
-                if div.get('LABEL') and div.get('ORDERLABEL'):
+                if label and pn:
                         # ORDERLABEL duplicates info in LABEL
-                        if pn_from_label or oLabel.lower() in label.lower():
+                        if pn == pn_from_label:
                                 return "{0} {1}".format(label, seq_s)
                         else:
-                                return "{0}, p. {1} {2}".format(label, pn_from_label, seq_s)
-                elif not label and oLabel:
-                        return "p. {0} {2}".format(oLabel, seq_s)
-                elif label and not oLabel:
+                                return "{0}, p. {1} {2}".format(label, pn, seq_s)
+                elif not label and pn:
+                        return "p. {0} {2}".format(pn, seq_s)
+                elif label and not pn:
                         return "{0} {1}".format(label, seq_s)
                 else:
                         return seq_s
@@ -115,35 +117,37 @@ def get_rangeKey(div):
                 f, l = get_intermediate_seq_values(div[0], div[-1])
                 display_ss = ""
                 if f["page"] and l["page"]:
+                        label += ","
                         if f["page"] == l["page"]:
-                                display_ss = ", p. {0} ".format(f["page"])
+                                display_ss = "p. {0} ".format(f["page"])
                         else:
                                 display_ss =", pp. {0}-{1} ".format(f["page"], l["page"])
 
-                return label + \
-                        display_ss + \
-                        "(seq. {0})".format(f["seq"]) if f["seq"] == l["seq"] else "(seq. {0}-{1})".format(f["seq"], l["seq"])
+                return " ".join(filter(None, [label,
+                                              display_ss,
+                                              "(seq. {0})".format(f["seq"]) if f["seq"] == l["seq"] else "(seq. {0}-{1})".format(f["seq"], l["seq"])]))
 
-def process_intermediate(subdivs, rangeKey, new_ranges=None):
+def process_intermediate(div, new_ranges=None):
         """Processes intermediate divs in the structMap."""
 
         new_ranges = new_ranges or []
 
-        for sd in subdivs:
+        for sd in div:
                 # leaf node, get canvas info
                 if is_page(sd):
-                        p_range = process_page(sd)
-                        if p_range:
-                                new_ranges.append(p_range)
+                        my_range = process_page(sd)
                 else:
-                        new_ranges.extend(process_intermediate(sd))
+                        my_range = process_intermediate(sd)
+                if my_range:
+                        new_ranges.append(my_range)
+
         # this is for the books where every single page is labeled (like Book of Hours)
         # most books do not do this
         if len(new_ranges) == 1:
-                range_dict = new_ranges[0]
-                new_ranges = range_dict.get(range_dict.keys()[0])
 
-        return new_ranges
+                return {get_rangeKey(div): new_ranges[0].values()[0]}
+
+        return {get_rangeKey(div): new_ranges}
 
 
 # Get page number from ORDERLABEL or, failing that, LABEL, or, failing that, return None
@@ -151,7 +155,7 @@ def page_num(div):
         if 'ORDERLABEL' in div.attrib:
                 return div.get('ORDERLABEL')
         else:
-                match = page_re.match(div.get('LABEL', ''))
+                match = page_re.search(div.get('LABEL', ''))
                 return match and match.group(1)
 
 def get_intermediate_seq_values(first, last):
@@ -178,15 +182,14 @@ def process_struct_divs(div, ranges):
 	rangeKey = get_rangeKey(div)
 
 	# when the top level div is a PAGE
-	if 'TYPE' in div.attrib and div.get("TYPE") == 'PAGE':
+	if is_page(div):
 		p_range = process_page(div)
                 if p_range:
                         ranges.append(p_range)
         else:
                 subdivs = div.xpath('./mets:div', namespaces = XMLNS)
                 if len(subdivs) > 0:
-                        new_ranges = process_intermediate(subdivs, get_rangeKey(div))
-                        ranges.append({rangeKey: new_ranges})
+                        ranges.append(process_intermediate(div))
 
 	return ranges
 
@@ -299,7 +302,7 @@ def main(data, document_id, source, host, cookie=None):
 		hollisCheck = dom.xpath('/mets:mets/mets:amdSec//hulDrsAdmin:hulDrsAdmin/hulDrsAdmin:drsObject/hulDrsAdmin:harvardMetadataLinks/hulDrsAdmin:metadataIdentifier[../hulDrsAdmin:metadataType/text()="Aleph"]/text()', namespaces=XMLNS)
 	if len(hollisCheck) > 0:
 		hollisID = hollisCheck[0].strip()
-		seeAlso = HOLLIS_PUBLIC_URL+hollisID
+		seeAlso = HOLLIS_PUBLIC_URL.format(hollisID.rjust(9,"0"))
 		#response = urllib2.urlopen(HOLLIS_API_URL+hollisID).read()
 		response = webclient.get(HOLLIS_API_URL+hollisID, cookie).read()
 		mods_dom = etree.XML(response)

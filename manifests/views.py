@@ -23,6 +23,14 @@ PDS_VIEW_URL = environ.get("PDS_VIEW_URL", "http://pds.lib.harvard.edu/pds/view/
 
 sources = {"drs": "mets", "via": "mods", "hollis": "mods", "huam" : "huam"}
 
+def index(request, source=None):
+    source = source if source else "drs"
+    document_ids = models.get_all_manifest_ids_with_type(source)
+    host = request.META['HTTP_HOST']
+    cookie = request.COOKIES.get('hulaccess', None)
+    manifests = ({"uri": "/manifests/view/%s:%s" % (source, d_id), "title": (models.get_manifest_title(d_id, source) or "Untitled Item") + " (id: %s)" % d_id} for d_id in document_ids)
+    return render(request, 'manifests/index.html', {'manifests': manifests})
+
 # view any number of MODS, METS, or HUAM objects
 def view(request, view_type, document_id):
     doc_ids = document_id.split(';')
@@ -55,12 +63,6 @@ def view(request, view_type, document_id):
         # Check if its an experimental/dev Mirador codebase, otherwise use production
         if (view_type == "view-dev"):
             return render(request, 'manifests/dev.html', {'manifests' : manifests})
-        elif (view_type == "view-annotator"):
-            return render(request, 'manifests/annotator.html', {'manifests' : manifests})
-        elif (view_type == "view-m1"):
-            return render(request, 'manifests/m1.html', {'manifests' : manifests})
-        elif (view_type == "view-m2"):
-            return render(request, 'manifests/m2.html', {'manifests' : manifests, 'loadedUri' : manifests.keys()[0]})
         else:
             return render(request, 'manifests/manifest.html', {'manifests' : manifests, 'loadedUri' : manifests.keys()[0], 'pds_view_url': PDS_VIEW_URL})
     else:

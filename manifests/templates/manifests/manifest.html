@@ -4,18 +4,18 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-  <link rel="stylesheet" type="text/css" href="{% static 'manifests/m2/css/mirador-combined.css' %}">
+  <link rel="stylesheet" type="text/css" href="{% static 'manifests/prod/css/mirador-combined.css' %}">
   <title>Harvard Mirador Viewer</title>
   <style type="text/css">
     body { padding: 0; margin: 0; overflow: hidden; font-size: 70%; }
-    #viewer { background: #333 url({% static 'manifests/m2/images/debut_dark.png' %}) left top repeat; width: 100%; height: 100%; position: fixed; }
+    #viewer { background: #333 url({% static 'manifests/prod/images/debut_dark.png' %}) left top repeat; width: 100%; height: 100%; position: fixed; }
     .user-buttons li .fa {
       color: #888;
       font-size: 18px;
       vertical-align: middle;
     }
     #harvard-bug {
-      background-image: url({% static 'manifests/m2/images/logos/harvard_header.jpg' %});
+      background-image: url({% static 'manifests/prod/images/logos/harvard_header.jpg' %});
       display: inline-block;
       color: transparent;
       text-indent: 9000px;
@@ -45,7 +45,7 @@
 </head>
 <body>
   <div id="viewer"></div>
-  <script src="{% static 'manifests/m2/mirador.js' %}"></script>
+  <script src="{% static 'manifests/prod/mirador.js' %}"></script>
   <script type="text/javascript">
     $(function() {
       var PDS_VIEW_URL = "{{ pds_view_url }}"
@@ -88,7 +88,7 @@
              "attributes": { "id": "help", "href": "http://nrs.harvard.edu/urn-3:hul.ois:hlviewerhelp"}},
             {"label": "View in PDS",
              "iconClass": "fa fa-external-link",
-             "attributes": { "id": "view-in-pds", "href": "#no-op"}},
+             "attributes": { "id": "view-in-pds", "href": "#no-op"}}
              ],
     	    "userLogo": {
             "label": "Harvard Library",
