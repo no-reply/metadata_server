@@ -74,6 +74,17 @@
         '</div>'
       ].join("\n"));
 
+      var choiceTmpl = Handlebars.compile([
+        '<div title="Choices" class="choices {{ op }}">',
+          '<p class="header">Displayed Manifests</p>',
+          '<ul>',
+            '{{#each choices}}',
+              '<li><a class="manifest" data-drs-id="{{ id }}" data-n="{{ n }}">{{ label }}</a></li>',
+            '{{/each}}',
+          '</ul>',
+        '</div>'
+      ].join("\n"));
+
       {% endverbatim %}
 
       Mirador({
@@ -86,6 +97,9 @@
             {"label": "Help",
              "iconClass": "fa fa-question-circle",
              "attributes": { "id": "help", "href": "http://nrs.harvard.edu/urn-3:hul.ois:hlviewerhelp"}},
+            {"label": "Choice Test",
+             "iconClass": "fa fa-cube",
+             "attributes": { "id": "test-choices" }},
             {"label": "View in PDS",
              "iconClass": "fa fa-external-link",
              "attributes": { "id": "view-in-pds", "href": "#no-op"}},
@@ -110,55 +124,86 @@
         ]
       });
 
-      $(document).on('click', '#view-in-pds', function (e) {
+      var present_choices = function (e) {
         e.preventDefault();
-        var parts = window.location.pathname.split("/");
-        var last_idx = parts.length - 1;
-        var drs_match = parts[last_idx].match(/drs:(\d+)/);
-        var mWindow = Mirador.viewer.workspace.slots[0].window;
-        var focusType = mWindow.currentFocus;
-        var n = mWindow.focusModules[focusType].currentImgIndex + 1;
+        console.log('Present choices');
+        var op = e.currentTarget.id;
+        var choices = $.map(Mirador.viewer.workspace.windows, function (window, i) {
+          var uri = window.manifest.uri,
+              parts = uri.split("/"),
+              last_idx = parts.length - 1,
+              drs_match = parts[last_idx].match(/drs:(\d+)/),
+              drs_id = drs_match && drs_match[1],
+              focusType = window.currentFocus,
+              n = window.focusModules[focusType].currentImgIndex + 1;
 
-        if (drs_match && drs_match[1]){
-          window.open(PDS_VIEW_URL + drs_match[1] + "?n=" + n);
+          return {"label": window.manifest.jsonLd.label, "drs_id": drs_id, "uri": window.manifest.uri, "n": n};
+        });
+        if (choices.length == 1) {
+          operations[op](choices[0]);
         }
-      });
+        else {
+          var $dialog = $('#choice-modal');
+          if ($dialog.get().length > 0) {
+            $dialog.dialog('close');
+          }
+          else if (choices.length) {
+            $dialog = $('<div id="choice-modal" style="display:none" />');
+            $dialog.html(choiceTmpl({choices: choices, op: op}));
+            $dialog.appendTo('body');
+            $dialog.dialog({modal: true,
+                            draggable: false,
+                            resizable: false,
+                            width: "90%",
+                            classes: "qtip-bootstrap",
+                            title: "Citation",
+                            close: function (e,ui) {
+                              console.log(ui);
+                              $dialog.remove();},
 
-      $(document).on('click', '#cite', function (e) {
-        e.preventDefault();
-        var parts = window.location.pathname.split("/");
-        var last_idx = parts.length - 1;
-        var drs_match = parts[last_idx].match(/drs:(\d+)/);
-        var mWindow = Mirador.viewer.workspace.slots[0].window;
-        var focusType = mWindow.currentFocus;
-        var n = mWindow.focusModules[focusType].currentImgIndex + 1;
-
-        var $dialog = $('#citation-modal');
-
-        if ($dialog.get().length > 0) {
-          $dialog.dialog('close');
-        }
-        else if (drs_match && drs_match[1]) {
-          $dialog = $('<div id="citation-modal" style="display:none" />')
-          $.getJSON('//pdstest.lib.harvard.edu:9005/pds/cite/' + drs_match[1] + '?callback=?', {'n':n})
-            .done(function (data) {
-              if (data.citation) {
-                $dialog.html(citationTmpl(data.citation));
-                $dialog.appendTo('body');
-                $dialog.dialog({modal: true,
-                                draggable: false,
-                                resizable: false,
-                                width: "90%",
-                                classes: "qtip-bootstrap",
-                                title: "Citation",
-                                close: function (e,ui) {
-                                  $dialog.remove();},
-
-                               }).dialog('open');
-              }
+            }).dialog('open');
+            $dialog.find('a').on('click', function (e) {
+              $dialog.dialog('close');
+              operations[op]($(e.currentTarget).data('drs-id'), $(e.currentTarget).data('n'));
             });
+          }
         }
-      });
+      };
+      var operations = {
+        "view-in-pds": function (drs_id, n) {
+          window.open(PDS_VIEW_URL + drs_id + "?n=" + n);
+        },
+        "cite": function (drs_id, n) {
+          var $dialog = $('#citation-modal');
+
+          if ($dialog.get().length > 0) {
+            $dialog.dialog('close');
+          }
+          else {
+            $dialog = $('<div id="citation-modal" style="display:none" />');
+            $.getJSON('//pdstest.lib.harvard.edu:9005/pds/cite/' + drs_id + '?callback=?', {'n':n})
+             .done(function (data) {
+               if (data.citation) {
+                 $dialog.html(citationTmpl(data.citation));
+                 $dialog.appendTo('body');
+                 $dialog.dialog({modal: true,
+                                 draggable: false,
+                                 resizable: false,
+                                 width: "90%",
+                                 classes: "qtip-bootstrap",
+                                 title: "Citation",
+                                 close: function (e,ui) {
+                                   console.log(ui);
+                                   $dialog.remove();},
+
+                 }).dialog('open');
+               } //TODO: Else graceful error display
+             });
+          }
+        }
+      };
+
+      $(document).on('click', "#cite, #view-in-pds", present_choices);
     });
   </script>
 </body>
