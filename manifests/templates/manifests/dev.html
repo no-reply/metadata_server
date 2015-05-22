@@ -46,46 +46,51 @@
 <body>
   <div id="viewer"></div>
   <script src="{% static 'manifests/dev/mirador.js' %}"></script>
+  {% verbatim %}
+  <script id="citation-tmpl" type="text/x-handlebars-template">
+    <div title="citation">
+      <p class="header">Resource</p>
+      <ul>
+        <li><span class="label plink">Persistent Link</span> <a href="{{{resource.urn}}}">{{resource.urn}}</a></li>
+        <li><span class="label desc">Description</span> {{{resource.description}}}</li>
+        <li><span class="label repo">Repository</span> {{{resource.repository}}}</li>
+        <li><span class="label inst">Institution</span> {{{resource.institution}}}</li>
+        <li><span class="label access">Accessed</span> {{{resource.accessed}}}</li>
+      </ul>
+
+      <p class="header">Page</p>
+      <ul>
+        <li><span class="label plink">Persistent Link</span> <a href="{{{resource.urn}}}">{{resource.urn}}</a></li>
+        <li><span class="label desc">Description</span> {{{resource.description}}}</li>
+        <li><span class="label page">Page</span> {{{page.pagelabel}}}</li>
+        <li><span class="label repo">Repository</span> {{{resource.repository}}}</li>
+        <li><span class="label inst">Institution</span> {{{resource.institution}}}</li>
+        <li><span class="label access">Accessed</span> {{{resource.accessed}}}</li>
+      </ul>
+    </div>
+  </script>
+
+  <script id="choices-tmpl" type="text/x-handlebars-template">
+    <div title="Choices" class="choices {{ op }}">
+      <p class="header">Displayed Manifests</p>
+      <ul>
+        {{#each choices}}
+          <li><a class="manifest" data-drs-id="{{ drs_id }}" data-n="{{ n }}">{{ label }}</a></li>
+        {{/each}}
+      </ul>
+    </div>
+  </script>
+
+      {% endverbatim %}
   <script type="text/javascript">
     $(function() {
       var PDS_VIEW_URL = "{{ pds_view_url }}"
 
-      {% verbatim %}
-
-      var citationTmpl = Handlebars.compile([
-        '<div title="citation">',
-          '<p class="header">Resource</p>',
-          '<ul>',
-            '<li><span class="label plink">Persistent Link</span> <a href="{{{resource.urn}}}">{{resource.urn}}</a></li>',
-            '<li><span class="label desc">Description</span> {{{resource.description}}}</li>',
-            '<li><span class="label repo">Repository</span> {{{resource.repository}}}</li>',
-            '<li><span class="label inst">Institution</span> {{{resource.institution}}}</li>',
-            '<li><span class="label access">Accessed</span> {{{resource.accessed}}}</li>',
-          '</ul>',
-          '<p class="header">Page</p>',
-          '<ul>',
-            '<li><span class="label plink">Persistent Link</span> <a href="{{{resource.urn}}}">{{resource.urn}}</a></li>',
-            '<li><span class="label desc">Description</span> {{{resource.description}}}</li>',
-            '<li><span class="label page">Page</span> {{{page.pagelabel}}}</li>',
-            '<li><span class="label repo">Repository</span> {{{resource.repository}}}</li>',
-            '<li><span class="label inst">Institution</span> {{{resource.institution}}}</li>',
-            '<li><span class="label access">Accessed</span> {{{resource.accessed}}}</li>',
-          '</ul>',
-        '</div>'
-      ].join("\n"));
-
-      var choiceTmpl = Handlebars.compile([
-        '<div title="Choices" class="choices {{ op }}">',
-          '<p class="header">Displayed Manifests</p>',
-          '<ul>',
-            '{{#each choices}}',
-              '<li><a class="manifest" data-drs-id="{{ drs_id }}" data-n="{{ n }}">{{ label }}</a></li>',
-            '{{/each}}',
-          '</ul>',
-        '</div>'
-      ].join("\n"));
-
-      {% endverbatim %}
+      // Compile Handlebars templates into t
+      var t = {};
+      $('script[type="text/x-handlebars-template"]').each(function () {
+        t[this.id] = Handlebars.compile(this.innerHTML);
+      });
 
       Mirador({
         "id": "viewer",
@@ -97,9 +102,6 @@
             {"label": "Help",
              "iconClass": "fa fa-question-circle",
              "attributes": { "id": "help", "href": "http://nrs.harvard.edu/urn-3:hul.ois:hlviewerhelp"}},
-            {"label": "Choice Test",
-             "iconClass": "fa fa-cube",
-             "attributes": { "id": "test-choices" }},
             {"label": "View in PDS",
              "iconClass": "fa fa-external-link",
              "attributes": { "id": "view-in-pds", "href": "#no-op"}},
@@ -150,7 +152,7 @@
           }
           else if (choices.length) {
             $dialog = $('<div id="choice-modal" style="display:none" />');
-            $dialog.html(choiceTmpl({choices: choices, op: op}));
+            $dialog.html(t['choices-tmpl']({choices: choices, op: op}));
             $dialog.appendTo('body');
             $dialog.dialog({modal: true,
                             draggable: false,
@@ -158,8 +160,8 @@
                             width: "90%",
                             classes: "qtip-bootstrap",
                             title: "Citation",
-                            close: function (e,ui) {
-                              console.log(ui);
+                            close: function (e) {
+                              console.log(this)
                               $dialog.remove();},
 
             }).dialog('open');
@@ -185,7 +187,7 @@
             $.getJSON('//pdstest.lib.harvard.edu:9005/pds/cite/' + drs_id + '?callback=?', {'n':n})
              .done(function (data) {
                if (data.citation) {
-                 $dialog.html(citationTmpl(data.citation));
+                 $dialog.html(t['citation-tmpl'](data.citation));
                  $dialog.appendTo('body');
                  $dialog.dialog({modal: true,
                                  draggable: false,
@@ -193,8 +195,7 @@
                                  width: "90%",
                                  classes: "qtip-bootstrap",
                                  title: "Citation",
-                                 close: function (e,ui) {
-                                   console.log(ui);
+                                 close: function (e) {
                                    $dialog.remove();},
 
                  }).dialog('open');
