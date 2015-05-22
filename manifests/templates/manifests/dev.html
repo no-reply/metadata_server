@@ -126,7 +126,6 @@
 
       var present_choices = function (e) {
         e.preventDefault();
-        console.log('Present choices');
         var op = e.currentTarget.id;
         var choices = $.map(Mirador.viewer.workspace.windows, function (window, i) {
           var uri = window.manifest.uri,
@@ -136,8 +135,10 @@
               drs_id = drs_match && drs_match[1],
               focusType = window.currentFocus,
               n = window.focusModules[focusType].currentImgIndex + 1;
-
-          return {"label": window.manifest.jsonLd.label, "drs_id": drs_id, "uri": window.manifest.uri, "n": n};
+          if (drs_match) {
+            return {"label": window.manifest.jsonLd.label, "drs_id": drs_id, "uri": window.manifest.uri, "n": n};
+          }
+          // else omit manifest because we don't know how to cite/view it
         });
         if (choices.length == 1) {
           operations[op](choices[0].drs_id, choices[0].n);
