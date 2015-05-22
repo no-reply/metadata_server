@@ -160,10 +160,7 @@
                             width: "90%",
                             classes: "qtip-bootstrap",
                             title: "Citation",
-                            close: function (e) {
-                              console.log(this)
-                              $dialog.remove();},
-
+                            close: function (e) { $(this).remove()}
             }).dialog('open');
             $dialog.find('a').on('click', function (e) {
               $dialog.dialog('close');
@@ -195,9 +192,7 @@
                                  width: "90%",
                                  classes: "qtip-bootstrap",
                                  title: "Citation",
-                                 close: function (e) {
-                                   $dialog.remove();},
-
+                                 close: function (e) { $(this).remove()}
                  }).dialog('open');
                } //TODO: Else graceful error display
              });
