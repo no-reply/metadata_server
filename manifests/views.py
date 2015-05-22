@@ -62,7 +62,7 @@ def view(request, view_type, document_id):
     if len(manifests) > 0:
         # Check if its an experimental/dev Mirador codebase, otherwise use production
         if (view_type == "view-dev"):
-            return render(request, 'manifests/dev.html', {'manifests' : manifests})
+            return render(request, 'manifests/dev.html', {'manifests' : manifests, 'loadedUri': manifests.keys()[0], 'pds_view_url': PDS_VIEW_URL})
         else:
             return render(request, 'manifests/manifest.html', {'manifests' : manifests, 'loadedUri' : manifests.keys()[0], 'pds_view_url': PDS_VIEW_URL})
     else:
