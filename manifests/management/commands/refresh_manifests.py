@@ -28,8 +28,13 @@ class Command(BaseCommand):
             source = args[0]
         document_ids = models.get_all_manifest_ids_with_type(source)
         for id in document_ids:
-            self.stdout.write("Starting {0}{1}".format(source, id))
-            (success, response_doc, real_id, real_source) = views.get_manifest(id, source, True, socket.gethostname(), None)
+            self.stdout.write("Starting {0}:{1}".format(source, id))
+            try:
+                (success, response_doc, real_id, real_source) = views.get_manifest(id, source, True, socket.gethostname(), None)
+            except (urllib2.HTTPError, urllib2.URLError) as e:
+                self.stdout.write( "{0}:{1} failed due to HTTPError:\n".format(source, id))
+                self.stdout.write("\t{0}".format(e.reason))
+
             if success:
                 self.stdout.write("{0}:{1} successfully refreshed\n".format(source, id))
             else:
