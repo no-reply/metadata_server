@@ -21,12 +21,26 @@ PDS_VIEW_URL = environ.get("PDS_VIEW_URL", "http://pds.lib.harvard.edu/pds/view/
 sources = {"drs": "mets", "via": "mods", "hollis": "mods", "huam" : "huam"}
 
 class Command(BaseCommand):
+    help = """Refresh manifests from metadata sources.
+    This command has three modes of operation:
+
+        * If no argument, refresh "drs" source manifests
+        * If a source, refresh all manifests belonging to that source
+        * If a single item id (source:id_number), refresh that manifest
+    """
+
     def handle(self, *args, **options):
+
         if len(args) == 0:
             source = "drs"
         else:
             source = args[0]
-        document_ids = models.get_all_manifest_ids_with_type(source)
+
+        if ":" in source:
+            (source, single_id) = source.split(":")
+            document_ids = (single_id,)
+        else:
+            document_ids = models.get_all_manifest_ids_with_type(source)
         for id in document_ids:
             self.stdout.write("Starting {0}:{1}".format(source, id))
             try:
@@ -34,6 +48,7 @@ class Command(BaseCommand):
             except (urllib2.HTTPError, urllib2.URLError) as e:
                 self.stdout.write( "{0}:{1} failed due to HTTPError:\n".format(source, id))
                 self.stdout.write("\t{0}".format(e.reason))
+                success = False
 
             if success:
                 self.stdout.write("{0}:{1} successfully refreshed\n".format(source, id))
