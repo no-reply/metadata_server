@@ -26,6 +26,16 @@ set :keep_releases, 3
 
 set :default_env, {'LD_LIBRARY_PATH' => "/usr/local/lib"}
 
+namespace :manage do
+  desc 'Refresh manifests'
+  task :refresh do
+    on roles(:all) do
+      within release_path do
+        django("refresh_manifests #{ENV['T']}", '--no-color')
+      end
+    end
+  end
+end
 
 namespace :deploy do
   desc 'Restart web server'
