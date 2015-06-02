@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 from lxml import etree
-import json, sys
+import json, sys, re
 import urllib2
 from django.conf import settings
 import webclient
@@ -18,7 +18,7 @@ XMLNS = {
 imageHash = {}
 canvasInfo = []
 rangesJsonList = []
-manifestUriBase = ""
+manifestUriBase = u""
 
 ## TODO: Other image servers?
 imageUriBase = settings.IIIF['imageUriBase']
@@ -31,58 +31,177 @@ profileLevel = settings.IIIF['profileLevel']
 attribution = "Provided by Harvard University"
 
 HOLLIS_API_URL = "http://webservices.lib.harvard.edu/rest/MODS/hollis/"
-HOLLIS_PUBLIC_URL = "http://hollisclassic.harvard.edu/F?func=find-c&CCL_TERM=sys="
+HOLLIS_PUBLIC_URL = "http://id.lib.harvard.edu/aleph/{0}/catalog"
  ## Add ISO639-2B language codes here where books are printed right-to-left (not just the language is read that way)
 right_to_left_langs = set(['ara','heb'])
 
-def process_page(sd, rangeKey, new_ranges):
+# List of mime types: ordering is as defined in pdx_util (internalMets.java), but with txt representations omitted.
+MIME_HIERARCHY = ['image/jp2', 'image/jpx', 'image/jpeg', 'image/gif', 'image/tiff']
+
+def get_display_image(fids):
+        """Goes through list of file IDs for a page, and returns the best choice for delivery (according to mime hierarchy)."""
+
+        def proc_fid(out, fid):
+                """Internal fn mapped over all images. Sets last image of each mime-type in out hash."""
+                img = imageHash.get(fid, [])
+                if len(img) == 2:
+                        out[img["mime"]] = (img["img"], fid)
+                return out
+
+        versions = reduce(proc_fid, fids, {})
+        display_img = None
+        for mime in MIME_HIERARCHY:
+                display_img = versions.get(mime)
+                if display_img:
+                        break
+
+        return display_img or (None, None)
+
+def process_page(sd):
 	# first check if PAGE has label, otherwise get parents LABEL/ORDER
-	if 'LABEL' in sd.attrib:
-		label = sd.get('LABEL') + " (seq. {0})".format(sd.get("ORDER"))
-	else:
-		label = rangeKey + " (seq. {0})".format(sd.get("ORDER"))
-	for fid in sd.xpath('./mets:fptr/@FILEID', namespaces=XMLNS):
-		if fid in imageHash.keys():
-			info = {}
-			info['label'] = label
-			info['image'] = imageHash[fid]
-			if info not in canvasInfo:
+        label = get_rangeKey(sd)
+
+        display_image, fid = get_display_image(sd.xpath('./mets:fptr/@FILEID', namespaces=XMLNS))
+
+        my_range = None
+
+        if display_image:
+                info = {}
+                info['label'] = label
+                info['image'] = display_image
+                if info not in canvasInfo:
 				canvasInfo.append(info)
-			range = {}
-			range[label] = imageHash[fid]
-			new_ranges.append(range)
+                                my_range = {}
+                                my_range[label] = imageHash[fid]["img"]
 
-def process_struct_map(div, ranges):
-	if 'LABEL' in div.attrib:
-		rangeKey = div.get('LABEL')
+        return my_range
+
+def is_page(div):
+        return 'TYPE' in div.attrib and div.get('TYPE') == 'PAGE'
+
+# Regex for determining if page number exists in label
+page_re = re.compile(r"[pP](?:age|\.) \[?(\d+)\]?")
+
+# RangeKey used for table of contents
+# Logic taken from pds/**/navsection.jsp, cleaned up for redundant cases
+#
+# Note: Doesn't use page_num because it does deduplication
+#       in cases where ORDERLABEL is represented in LABEL
+def get_rangeKey(div):
+        if is_page(div):
+                label = div.get('LABEL', "").strip()
+                pn = page_num(div)
+                seq = div.get('ORDER')
+                seq_s = "(seq. {0})".format(seq)
+                if label:
+                        match = page_re.search(label)
+                        pn_from_label = match and match.group(1)
+
+
+                # Both label and orderlabel exist and are not empty
+                if label and pn:
+                        # ORDERLABEL duplicates info in LABEL
+                        if pn == pn_from_label:
+                                return "{0} {1}".format(label, seq_s)
+                        else:
+                                return "{0}, p. {1} {2}".format(label, pn, seq_s)
+                elif not label and pn:
+                        return "p. {0} {2}".format(pn, seq_s)
+                elif label and not pn:
+                        return "{0} {1}".format(label, seq_s)
+                else:
+                        return seq_s
+        # Intermediates
 	else:
-		rangeKey = div.get('ORDER')
+                label = div.get('LABEL', "").strip()
+                f, l = get_intermediate_seq_values(div[0], div[-1])
+                display_ss = ""
+                if f["page"] and l["page"]:
+                        label += ","
+                        if f["page"] == l["page"]:
+                                display_ss = "p. {0} ".format(f["page"])
+                        else:
+                                display_ss =", pp. {0}-{1} ".format(f["page"], l["page"])
 
-	# when the top level divs are PAGEs
-	if 'TYPE' in div.attrib and div.get("TYPE") == 'PAGE':
-		new_ranges = []
-		process_page(div, rangeKey, new_ranges)
-		if len(new_ranges) == 1:
-			range_dict = new_ranges[0]
-			new_ranges = range_dict.get(range_dict.keys()[0])
-		ranges.append({rangeKey : new_ranges})
+                return " ".join(filter(None, [label,
+                                              display_ss,
+                                              "(seq. {0})".format(f["seq"]) if f["seq"] == l["seq"] else "(seq. {0}-{1})".format(f["seq"], l["seq"])]))
 
-	subdivs = div.xpath('./mets:div', namespaces = XMLNS)
-	if len(subdivs) > 0:
-		new_ranges = []
-		for sd in subdivs:
-			# leaf node, get canvas info
-			if 'TYPE' in sd.attrib and sd.get("TYPE") == 'PAGE':
-				process_page(sd, rangeKey, new_ranges)
-			else:
-				new_ranges.extend(process_struct_map(sd, []))
-		# this is for the books where every single page is labeled (like Book of Hours)
-		# most books do not do this
-		if len(new_ranges) == 1:
-			range_dict = new_ranges[0]
-			new_ranges = range_dict.get(range_dict.keys()[0])
-		ranges.append({rangeKey : new_ranges})
+def process_intermediate(div, new_ranges=None):
+        """Processes intermediate divs in the structMap."""
+
+        new_ranges = new_ranges or []
+
+        for sd in div:
+                # leaf node, get canvas info
+                if is_page(sd):
+                        my_range = process_page(sd)
+                else:
+                        my_range = process_intermediate(sd)
+                if my_range:
+                        new_ranges.append(my_range)
+
+        # this is for the books where every single page is labeled (like Book of Hours)
+        # most books do not do this
+        if len(new_ranges) == 1:
+
+                return {get_rangeKey(div): new_ranges[0].values()[0]}
+
+        return {get_rangeKey(div): new_ranges}
+
+
+# Get page number from ORDERLABEL or, failing that, LABEL, or, failing that, return None
+def page_num(div):
+        if 'ORDERLABEL' in div.attrib:
+                return div.get('ORDERLABEL')
+        else:
+                match = page_re.search(div.get('LABEL', ''))
+                return match and match.group(1)
+
+def get_intermediate_seq_values(first, last):
+        """Gets bookend values for constructing pp. and seq. range display, e.g. pp. 8-9 (seq. 10-17)."""
+
+        # Drill down to first page
+        while first.get('TYPE') == 'INTERMEDIATE':
+                first = first[0]
+
+        if first.get('TYPE') == 'PAGE':
+                first_vals = {"seq": first.get('ORDER'), "page": page_num(first)}
+
+        # Drill down last page
+        while last.get('TYPE') == 'INTERMEDIATE':
+                last = last[-1]
+
+        if last.get('TYPE') == 'PAGE':
+                last_vals = {"seq": last.get('ORDER'), "page": page_num(last)}
+
+        return first_vals, last_vals
+
+def process_struct_divs(div, ranges):
+        """Toplevel processing function.  Run over contents of the CITATION div (or the stitched subdiv if present)."""
+	rangeKey = get_rangeKey(div)
+
+	# when the top level div is a PAGE
+	if is_page(div):
+		p_range = process_page(div)
+                if p_range:
+                        ranges.append(p_range)
+        else:
+                subdivs = div.xpath('./mets:div', namespaces = XMLNS)
+                if len(subdivs) > 0:
+                        ranges.append(process_intermediate(div))
+
 	return ranges
+
+def process_structMap(smap):
+        divs = smap.xpath('./mets:div[@TYPE="CITATION"]/mets:div', namespaces=XMLNS)
+
+        # Check if the object has a stitched version(s) already made.  Use only those
+        for st in divs:
+                stitchCheck = st.xpath('./@LABEL[contains(., "stitched")]', namespaces=XMLNS)
+                if stitchCheck:
+                        divs = st
+                        break
 
 def get_leaf_canvases(ranges, leaf_canvases):
 	for range in ranges:
@@ -118,7 +237,7 @@ def create_range_json(ranges, manifest_uri, range_id, within, label):
 	rangesJsonList.append(rangejson)
 
 def create_ranges(ranges, previous_id, manifest_uri):
-	if not any(isinstance(x, dict) for x in ranges):
+        if not any(isinstance(x, dict) for x in ranges):
 		return
 
 	counter = 0
@@ -136,6 +255,7 @@ def create_ranges(ranges, previous_id, manifest_uri):
 		create_ranges(new_ranges, range_id, manifest_uri)
 
 def main(data, document_id, source, host, cookie=None):
+
 	# clear global variables
 	global imageHash
 	imageHash = {}
@@ -175,14 +295,14 @@ def main(data, document_id, source, host, cookie=None):
 	## TODO: top to bottom and bottom to top viewing directions
 	## TODO: add Finding Aid links
 	viewingDirection = 'left-to-right' # default
-	seeAlso = ""
+	seeAlso = u""
 	if isDrs1:
 		hollisCheck = dom.xpath('/mets:mets/mets:dmdSec/mets:mdWrap/mets:xmlData/mods:mods/mods:identifier[@type="hollis"]/text()', namespaces=XMLNS)
 	else:
 		hollisCheck = dom.xpath('/mets:mets/mets:amdSec//hulDrsAdmin:hulDrsAdmin/hulDrsAdmin:drsObject/hulDrsAdmin:harvardMetadataLinks/hulDrsAdmin:metadataIdentifier[../hulDrsAdmin:metadataType/text()="Aleph"]/text()', namespaces=XMLNS)
 	if len(hollisCheck) > 0:
 		hollisID = hollisCheck[0].strip()
-		seeAlso = HOLLIS_PUBLIC_URL+hollisID
+		seeAlso = HOLLIS_PUBLIC_URL.format(hollisID.rjust(9,"0"))
 		#response = urllib2.urlopen(HOLLIS_API_URL+hollisID).read()
 		response = webclient.get(HOLLIS_API_URL+hollisID, cookie).read()
 		mods_dom = etree.XML(response)
@@ -197,12 +317,8 @@ def main(data, document_id, source, host, cookie=None):
 
 	manifest_uri = manifestUriBase + "%s:%s" % (source, document_id)
 
-	images = dom.xpath('/mets:mets/mets:fileSec/mets:fileGrp/mets:file[starts-with(@MIMETYPE, "image/jp")]', namespaces=XMLNS)
-        # HAX: Until such time as we have universal jp2s, if there's no jp2/jpegs, grab WHATEVER
-        if len(images) == 0:
-                images = dom.xpath('/mets:mets/mets:fileSec/mets:fileGrp/mets:file[starts-with(@MIMETYPE, "image/")]', namespaces=XMLNS)
-
-	struct = dom.xpath('/mets:mets/mets:structMap/mets:div[@TYPE="CITATION"]/mets:div', namespaces=XMLNS)
+	images = dom.xpath('/mets:mets/mets:fileSec/mets:fileGrp/mets:file[starts-with(@MIMETYPE, "image/")]', namespaces=XMLNS)
+        struct = dom.xpath('/mets:mets/mets:structMap/mets:div[@TYPE="CITATION"]/mets:div', namespaces=XMLNS)
 
 	# Check if the object has a stitched version(s) already made.  Use only those
 	for st in struct:
@@ -212,12 +328,12 @@ def main(data, document_id, source, host, cookie=None):
 			break
 
 	for img in images:
-		imageHash[img.xpath('./@ID', namespaces=XMLNS)[0]] = img.xpath('./mets:FLocat/@xlink:href', namespaces = XMLNS)[0]
+		imageHash[img.xpath('./@ID', namespaces=XMLNS)[0]] = {"img": img.xpath('./mets:FLocat/@xlink:href', namespaces = XMLNS)[0], "mime": img.attrib['MIMETYPE']}
 
 	rangeList = []
 	rangeInfo = []
 	for st in struct:
-		ranges = process_struct_map(st, [])
+		ranges = process_struct_divs(st, [])
 		rangeList.extend(ranges)
 	if len(rangeList) > 1:
 		rangeInfo = [{"Table of Contents" : rangeList}]
@@ -239,14 +355,13 @@ def main(data, document_id, source, host, cookie=None):
 		"structures": []
 	}
 
-	if (seeAlso != ""):
+	if (seeAlso != u""):
 		mfjson["seeAlso"] = seeAlso
 
 	canvases = []
 	for cvs in canvasInfo:
-		#response = urllib2.urlopen(imageUriBase + cvs['image'] + imageInfoSuffix)
-		response = webclient.get(imageUriBase + cvs['image'] + imageInfoSuffix, cookie)
-		infojson = json.load(response)
+                response = webclient.get(imageUriBase + cvs['image'] + imageInfoSuffix, cookie)
+                infojson = json.load(response)
 
                 if "gif" in infojson['formats']:
                         fmt = "image/gif"
