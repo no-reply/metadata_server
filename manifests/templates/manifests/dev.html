@@ -124,6 +124,7 @@
           {% endfor %}
         ],
         {% if num_manifests <= 2 and num_manifests > 0 %}
+          "layout": "1x{{num_manifests}}",
           "windowObjects":[
             {% for uri, title in manifests.items %}
               { "loadedManifest": "{{ uri }}",
