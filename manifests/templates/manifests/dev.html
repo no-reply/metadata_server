@@ -122,12 +122,15 @@
           {% for uri, title in manifests.items %}
             { "manifestUri": "{{ uri }}", "location": "Harvard University", "title": "{{ title }}"},
           {% endfor %}
-          {% include 'manifests/demolinks.js' %}
         ],
-        "windowObjects":[
-          { "loadedManifest": "{{ loadedUri }}",
-            "viewType": "ImageView" }
-        ],
+        {% if num_manifests <= 2 and num_manifests > 0 %}
+          "windowObjects":[
+            {% for uri, title in manifests.items %}
+              { "loadedManifest": "{{ uri }}",
+                "viewType": "ImageView" },
+            {% endfor %}
+          ],
+        {% endif %}
         "defaultWindowSettings": {
           "annotationLayer": false
         }

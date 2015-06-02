@@ -60,7 +60,7 @@ def view(request, view_type, document_id):
             manifests[uri] = title
 
     if len(manifests) > 0:
-        view_locals = {'manifests' : manifests, 'loadedUri': manifests.keys()[0], 'pds_view_url': PDS_VIEW_URL}
+        view_locals = {'manifests' : manifests, 'num_manifests': len(manifests), 'loadedUri': manifests.keys()[0], 'pds_view_url': PDS_VIEW_URL}
         # Check if its an experimental/dev Mirador codebase, otherwise use production
         if (view_type == "view-dev"):
             return render(request, 'manifests/dev.html', view_locals)
