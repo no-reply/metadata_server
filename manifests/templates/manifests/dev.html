@@ -98,7 +98,11 @@
 
       Mirador({
         "id": "viewer",
-        "layout": "1x1",
+        {% if num_manifests > 0 and num_manifests <=2 %}
+          "layout": "1x{{num_manifests}}",
+        {% else %}
+          "layout": "1x1",
+        {% endif %}
         "saveSession": false,
         "mainMenuSettings" : {
           "buttons": { bookmark: false},
@@ -124,7 +128,6 @@
           {% endfor %}
         ],
         {% if num_manifests <= 2 and num_manifests > 0 %}
-          "layout": "1x{{num_manifests}}",
           "windowObjects":[
             {% for uri, title in manifests.items %}
               { "loadedManifest": "{{ uri }}",
