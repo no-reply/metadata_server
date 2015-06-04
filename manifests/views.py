@@ -60,11 +60,12 @@ def view(request, view_type, document_id):
             manifests[uri] = title
 
     if len(manifests) > 0:
+        view_locals = {'manifests' : manifests, 'num_manifests': len(manifests), 'loadedUri': manifests.keys()[0], 'pds_view_url': PDS_VIEW_URL}
         # Check if its an experimental/dev Mirador codebase, otherwise use production
         if (view_type == "view-dev"):
-            return render(request, 'manifests/dev.html', {'manifests' : manifests})
+            return render(request, 'manifests/dev.html', view_locals)
         else:
-            return render(request, 'manifests/manifest.html', {'manifests' : manifests, 'loadedUri' : manifests.keys()[0], 'pds_view_url': PDS_VIEW_URL})
+            return render(request, 'manifests/manifest.html', view_locals)
     else:
         return HttpResponse("The requested document ID(s) %s could not be displayed" % document_id, status=404) # 404 HttpResponse object
 
