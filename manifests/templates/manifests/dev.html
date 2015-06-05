@@ -62,6 +62,12 @@
     #print-modal p.header:after, #print-modal span.label:after {
       content: ":";
     }
+    .textsmallred {
+      font-family: Verdana, Arial, Helvetica, sans-serif;
+      font-size: 90%;
+      color: #990000;
+      text-decoration: none;
+    }
 
     #search-modal p.header {
       font-size: 115%;
@@ -123,9 +129,58 @@
   <script id="print-tmpl" type="text/x-handlebars-template">
     <div title="Print" class="print {{ op }}">
       <p class="header">Print Manifest</p>
-      <form ="">
-          <li> Print {{ drs_id }}</li>
-      </form>
+  
+
+      <table width="100%" border="0" cellspacing="15">
+      <tr valign="top">
+      <td width="30%">
+      <strong>Convert to PDF</strong> creates a PDF file for the selected pages.
+        You can print the PDF or save it to disk.
+        <p>
+        This service creates PDFs at 10 pages-per-minute.
+        Requests larger than 500 pages can take an hour or more to process.
+        <p>
+        The link to your PDF will remain active for 7 days.
+
+       </td><td>
+       <form name="print" action="/pds/print/732241">
+       <input type="hidden" name="n" value="1"/>
+       <input type="hidden" name="id" value="{{} drs_id }}"/>
+       <table width="100%" border="0"  cellpadding="6" cellspacing="0">
+       <tr>
+          <td align="left">
+             <div class="textsmallred"><small>Requests for 10 pages or less will be delivered to your browser immediately. For larger requests, please enter an email address and a link to the PDF will be delivered by email.
+                <p>
+                <u>Firefox users</u>: To open large PDFs, go to Tools &gt; Options &gt; Applications and set Firefox to open Adobe Documents in Adobe Acrobat (not in "Adobe Acrobat in Firefox").
+
+
+                <small></div><hr/>
+  </td></tr>
+  <tr> <td>
+  <input type="radio" name="printOpt" value="current" checked />Convert current page
+  </td></tr>
+  <tr><td >
+  <input type="radio" name="printOpt" value="range"  />Convert page sequence
+  <input type="text" name="start" size="6" onclick="javascript:document.print.printOpt[1].checked=true;" value="" /> to
+  <input type="text" name="end" size="6" onclick="javascript:document.print.printOpt[1].checked=true;" value=""/>
+  </td></tr>
+  <tr><td >
+  <input type="radio" name="printOpt" value="all"  />Convert entire document
+         </td></tr>
+        <tr><td>
+         Email address: <input type="text" name="email" size="32" onclick="" value=""/>
+  </td></tr>
+  
+  </table>
+  <br/>
+  <table border="0" width="100%" align="center"><tr align="right"><td>
+  <div>
+  <input type="submit"  value="   Convert   "  onclick="" name="submit"/>
+  <input type="button"  value="  Close  " onclick="window.close()" name="button"/>
+  </div></td></tr></table></form></td></tr></table>
+
+
+
     </div>
   </script>
 
