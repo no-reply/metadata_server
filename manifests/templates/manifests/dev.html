@@ -124,8 +124,7 @@
     <div title="Print" class="print {{ op }}">
       <p class="header">Print Manifest</p>
       <form ="">
-          <li><a class="manifest" data-drs-id="{{ drs_id }}" data-n="{{ n }}">{{ label }}</a></li>
-           Print
+          <li> Print {{ drs_id }}</li>
       </form>
     </div>
   </script>
@@ -270,7 +269,23 @@
            $dialog = $('<div id="search-modal" style="display:none" />');
         },
         "print": function(drs_id, n) {
-            $dialog = $('<div id="print-modal" style="display:none" />');
+           var $dialog = $('#print-modal');
+
+           if ($dialog.get().length > 0) {
+            $dialog.dialog('close');
+           }
+           else {
+              $dialog = $('<div id="print-modal" style="display:none" />');
+              $dialog.html(t['print-tmpl'](drs_id));
+              $dialog.dialog({modal: true,
+                                 draggable: false,
+                                 resizable: false,
+                                 width: "90%",
+                                 classes: "qtip-bootstrap",
+                                 title: "Print",
+                                 close: function (e) { $(this).remove()}
+                 }).dialog('open');
+           }
         }
       };
 
