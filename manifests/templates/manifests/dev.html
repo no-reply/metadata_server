@@ -68,6 +68,16 @@
       color: #990000;
       text-decoration: none;
     }
+    .buttonhighlightred {
+     font-family: Verdana, Arial, Helvetica, sans-serif;
+    font-size: 90%;
+    font-weight: bold;
+    color: #FFFFFF;
+    text-decoration: none;
+    background-color: #990000;
+    padding: 2px;
+    margin: 0px;
+   }
 
     #search-modal p.header {
       font-size: 115%;
@@ -155,29 +165,28 @@
 
 
                 <small></div><hr/>
-  </td></tr>
-  <tr> <td>
-  <input type="radio" name="printOpt" value="current" checked />Convert current page
-  </td></tr>
-  <tr><td >
-  <input type="radio" name="printOpt" value="range"  />Convert page sequence
-  <input type="text" name="start" size="6" onclick="javascript:document.print.printOpt[1].checked=true;" value="" /> to
-  <input type="text" name="end" size="6" onclick="javascript:document.print.printOpt[1].checked=true;" value=""/>
-  </td></tr>
-  <tr><td >
-  <input type="radio" name="printOpt" value="all"  />Convert entire document
-         </td></tr>
-        <tr><td>
+        </td></tr>
+       <tr> <td>
+        <input type="radio" name="printOpt" value="current" checked />Convert current page
+      </td></tr>
+      <tr><td >
+        <input type="radio" name="printOpt" value="range"  />Convert page sequence
+        <input type="text" name="start" size="6" onclick="javascript:document.print.printOpt[1].checked=true;" value="" /> to
+        <input type="text" name="end" size="6" onclick="javascript:document.print.printOpt[1].checked=true;" value=""/>
+      </td></tr>
+      <tr><td >
+        <input type="radio" name="printOpt" value="all"  />Convert entire document
+      </td></tr>
+      <tr><td>
          Email address: <input type="text" name="email" size="32" onclick="" value=""/>
-  </td></tr>
+      </td></tr>
   
-  </table>
-  <br/>
-  <table border="0" width="100%" align="center"><tr align="right"><td>
-  <div>
-  <input type="submit"  value="   Convert   "  onclick="" name="submit"/>
-  <input type="button"  value="  Close  " onclick="window.close()" name="button"/>
-  </div></td></tr></table></form></td></tr></table>
+    </table>
+    <br/>
+    <table border="0" width="100%" align="center"><tr align="right"><td>
+    <div>
+    <input type="submit"  class="uttonhighlightred" value="   Convert   "  onclick="" name="submit"/>
+    </div></td></tr></table></form></td></tr></table>
 
 
 
