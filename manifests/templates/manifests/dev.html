@@ -135,6 +135,8 @@
   <script type="text/javascript">
     $(function() {
       var PDS_VIEW_URL = "{{ pds_view_url }}"
+      var PDS_PRINT_URL = "{{ pds_print_url }}"
+      var PDS_SEARCH_URL = "{{ pds_search_url }}"
 
       // Compile Handlebars templates into t
       var t = {};
@@ -270,6 +272,7 @@
         },
         "print": function(drs_id, n) {
           console.log("print" + drs_id);
+           var content = { drs_id: drs_id };
            var $dialog = $('#print-modal');
 
            if ($dialog.get().length > 0) {
@@ -277,13 +280,13 @@
            }
            else {
               $dialog = $('<div id="print-modal" style="display:none" />');
-              $dialog.html(t['print-tmpl'](drs_id));
+              $dialog.html(t['print-tmpl'](content);
               $dialog.dialog({modal: true,
                                  draggable: false,
                                  resizable: false,
                                  width: "90%",
                                  classes: "qtip-bootstrap",
-                                 title: "Print",
+                                 title: "Print Manifest",
                                  close: function (e) { $(this).remove()}
                  }).dialog('open');
            }
