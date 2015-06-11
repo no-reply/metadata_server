@@ -125,6 +125,16 @@
     </div>
   </script>
 
+  <script id="search-tmpl" type="text/x-handlebars-template">
+    <div title="search">
+        <form id="search">
+           <input name="searchbox" id="searchbox"  size="20"/>
+        </form>
+
+        <div id="searchresults" style="display:none" />
+    </div>
+  </script>
+
   <script id="choices-tmpl" type="text/x-handlebars-template">
     <div title="Choices" class="choices {{ op }}">
       <p class="header">Displayed Manifests</p>
@@ -185,7 +195,7 @@
     <br/>
     <table border="0" width="100%" align="center"><tr align="right"><td>
     <div>
-    <input type="submit"  class="uttonhighlightred" value="   Convert   "  onclick="" name="submit"/>
+    <input type="submit"  class="buttonhighlightred" value="   Convert   "  onclick="" name="submit"/>
     </div></td></tr></table></form></td></tr></table>
 
 
@@ -332,7 +342,23 @@
           }
         },
         "search": function(drs_id, n) {
-           $dialog = $('<div id="search-modal" style="display:none" />');
+           var content = { drs_id: drs_id, n: n };
+           var $dialog = $('#search-modal');
+           if ($dialog.get().length > 0) {
+            $dialog.dialog('close');
+           }
+           else {
+              $dialog = $('<div id="search-modal" style="display:none" />');
+              $dialog.html(t['search-tmpl'](content));
+              $dialog.dialog({modal: true,
+                                 draggable: false,
+                                 resizable: false,
+                                 width: "90%",
+                                 classes: "qtip-bootstrap",
+                                 title: "Search Manifest",
+                                 close: function (e) { $(this).remove()}
+                 }).dialog('open');
+          }
         },
         "print": function(drs_id, n) {
           console.log("print" + drs_id);
