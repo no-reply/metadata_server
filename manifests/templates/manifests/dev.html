@@ -45,6 +45,57 @@
     #citation-modal p.header:after, #citation-modal span.label:after {
       content: ":";
     }
+
+    #print-modal p.header {
+      font-size: 115%;
+      font-weight: bold;
+    }
+    #print-modal span.label {
+      font-weight: bold;
+    }
+    #print-modal ul {
+      list-style: none inside none;
+    }
+    #print-modal ul li {
+      margin-bottom: 0.5em;
+    }
+    #print-modal p.header:after, #print-modal span.label:after {
+      content: ":";
+    }
+    .textsmallred {
+      font-family: Verdana, Arial, Helvetica, sans-serif;
+      font-size: 90%;
+      color: #990000;
+      text-decoration: none;
+    }
+    .buttonhighlightred {
+     font-family: Verdana, Arial, Helvetica, sans-serif;
+    font-size: 90%;
+    font-weight: bold;
+    color: #FFFFFF;
+    text-decoration: none;
+    background-color: #990000;
+    padding: 2px;
+    margin: 0px;
+   }
+
+    #search-modal p.header {
+      font-size: 115%;
+      font-weight: bold;
+    }
+    #search-modal span.label {
+      font-weight: bold;
+    }
+    #search-modal ul {
+      list-style: none inside none;
+    }
+    #search-modal ul li {
+      margin-bottom: 0.5em;
+    }
+    #search-modal p.header:after, #search-modal span.label:after {
+      content: ":";
+    }
+
   </style>
 </head>
 <body>
@@ -74,6 +125,16 @@
     </div>
   </script>
 
+  <script id="search-tmpl" type="text/x-handlebars-template">
+    <div title="search">
+        <form id="search">
+           <input name="searchbox" id="searchbox"  size="80"/>
+        </form>
+
+        <div id="searchresults" style="display:none" />
+    </div>
+  </script>
+
   <script id="choices-tmpl" type="text/x-handlebars-template">
     <div title="Choices" class="choices {{ op }}">
       <p class="header">Displayed Manifests</p>
@@ -85,10 +146,71 @@
     </div>
   </script>
 
+  <script id="print-tmpl" type="text/x-handlebars-template">
+    <div title="Print" class="print {{ op }}">
+      <p class="header">Print Manifest</p>
+  
+
+      <table width="100%" border="0" cellspacing="15">
+      <tr valign="top">
+      <td width="30%">
+      <strong>Convert to PDF</strong> creates a PDF file for the selected pages.
+        You can print the PDF or save it to disk.
+        <p>
+        This service creates PDFs at 10 pages-per-minute.
+        Requests larger than 500 pages can take an hour or more to process.
+        <p>
+        The link to your PDF will remain active for 7 days.
+
+       </td><td>
+       <form name="print" action="/pds/print/732241">
+       <input type="hidden" name="n" value="{{ n }}"/>
+       <input type="hidden" name="id" value="{{ drs_id }}"/>
+       <table width="100%" border="0"  cellpadding="6" cellspacing="0">
+       <tr>
+          <td align="left">
+             <div class="textsmallred"><small>Requests for 10 pages or less will be delivered to your browser immediately. For larger requests, please enter an email address and a link to the PDF will be delivered by email.
+                <p>
+                <u>Firefox users</u>: To open large PDFs, go to Tools &gt; Options &gt; Applications and set Firefox to open Adobe Documents in Adobe Acrobat (not in "Adobe Acrobat in Firefox").
+
+
+                <small></div><hr/>
+        </td></tr>
+       <tr> <td>
+        <input type="radio" name="printOpt" value="current" checked />Convert current page
+      </td></tr>
+      <tr><td >
+        <input type="radio" name="printOpt" value="range"  />Convert page sequence
+        <input type="text" name="start" size="6" onclick="javascript:document.print.printOpt[1].checked=true;" value="" /> to
+        <input type="text" name="end" size="6" onclick="javascript:document.print.printOpt[1].checked=true;" value=""/>
+      </td></tr>
+      <tr><td >
+        <input type="radio" name="printOpt" value="all"  />Convert entire document
+      </td></tr>
+      <tr><td>
+         Email address: <input type="text" name="email" size="32" onclick="" value=""/>
+      </td></tr>
+  
+    </table>
+    <br/>
+    <table border="0" width="100%" align="center"><tr align="right"><td>
+    <div>
+    <input type="submit"  class="buttonhighlightred" value="   Convert   "  onclick="" name="submit"/>
+    </div></td></tr></table></form></td></tr></table>
+
+
+
+    </div>
+  </script>
+
+
+
       {% endverbatim %}
   <script type="text/javascript">
     $(function() {
       var PDS_VIEW_URL = "{{ pds_view_url }}"
+      var PDS_PRINT_URL = "{{ pds_print_url }}"
+      var PDS_SEARCH_URL = "{{ pds_search_url }}"
 
       // Compile Handlebars templates into t
       var t = {};
@@ -115,7 +237,14 @@
              "attributes": { "id": "view-in-pds", "href": "#no-op"}},
             {"label": "Cite",
              "iconClass": "fa fa-paper-plane",
-             "attributes": { "id": "cite", "href": "#no-op"}}
+             "attributes": { "id": "cite", "href": "#no-op"}},
+            {"label": "Search",
+             "iconClass": "fa fa-search",
+             "attributes": { "id": "search", "href": "#no-op"}},
+            {"label": "Print",
+             "iconClass": "fa fa-print",
+             "attributes": { "id": "print", "href": "#no-op"}},
+
           ],
     	    "userLogo": {
             "label": "Harvard Library",
@@ -211,10 +340,50 @@
                } //TODO: Else graceful error display
              });
           }
+        },
+        "search": function(drs_id, n) {
+           var content = { drs_id: drs_id, n: n };
+           var $dialog = $('#search-modal');
+           if ($dialog.get().length > 0) {
+            $dialog.dialog('close');
+           }
+           else {
+              $dialog = $('<div id="search-modal" style="display:none" />');
+              $dialog.html(t['search-tmpl'](content));
+              $dialog.dialog({modal: true,
+                                 draggable: false,
+                                 resizable: false,
+                                 width: "90%",
+                                 classes: "qtip-bootstrap",
+                                 title: "Search Manifest",
+                                 close: function (e) { $(this).remove()}
+                 }).dialog('open');
+          }
+        },
+        "print": function(drs_id, n) {
+          console.log("print" + drs_id);
+           var content = { drs_id: drs_id, n: n };
+           var $dialog = $('#print-modal');
+
+           if ($dialog.get().length > 0) {
+            $dialog.dialog('close');
+           }
+           else {
+              $dialog = $('<div id="print-modal" style="display:none" />');
+              $dialog.html(t['print-tmpl'](content));
+              $dialog.dialog({modal: true,
+                                 draggable: false,
+                                 resizable: false,
+                                 width: "90%",
+                                 classes: "qtip-bootstrap",
+                                 title: "Print Manifest",
+                                 close: function (e) { $(this).remove()}
+                 }).dialog('open');
+           }
         }
       };
 
-      $(document).on('click', "#cite, #view-in-pds", present_choices);
+      $(document).on('click', "#cite, #view-in-pds, #search, #print", present_choices);
     });
   </script>
 </body>
