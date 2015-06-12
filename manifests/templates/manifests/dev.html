@@ -310,9 +310,9 @@
         },
 
         "data": [
-          {% for uri, title in manifests.items %}
-            { "manifestUri": "{{ uri }}", "location": "Harvard University", "title": "{{ title }}"},
-          {% endfor %}
+          {% autoescape off %}
+            {{ manifests_json|join:",\n" }}
+          {% endautoescape %}
         ],
         {% if num_manifests <= 2 and num_manifests > 0 %}
           "windowObjects":[
