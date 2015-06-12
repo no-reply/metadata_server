@@ -35,6 +35,7 @@ def index(request, source=None):
 def view(request, view_type, document_id):
     doc_ids = document_id.split(';')
     manifests = {}
+    manifests_json = []
     ams_cookie = None
     if 'hulaccess' in request.COOKIES:
         ams_cookie = request.COOKIES['hulaccess']
@@ -58,9 +59,12 @@ def view(request, view_type, document_id):
             title = models.get_manifest_title(real_id, real_source)
             uri = "http://%s/manifests/%s:%s" % (host,real_source,real_id)
             manifests[uri] = title
+            manifests_json.append(json.dumps({ "manifestUri": uri,
+                                               "location": "Harvard University",
+                                               "title": title}))
 
     if len(manifests) > 0:
-        view_locals = {'manifests' : manifests, 'num_manifests': len(manifests), 'loadedUri': manifests.keys()[0], 'pds_view_url': PDS_VIEW_URL}
+        view_locals = {'manifests' : manifests, 'manifests_json': manifests_json, 'num_manifests': len(manifests), 'loadedUri': manifests.keys()[0], 'pds_view_url': PDS_VIEW_URL}
         # Check if its an experimental/dev Mirador codebase, otherwise use production
         if (view_type == "view-dev"):
             return render(request, 'manifests/dev.html', view_locals)
