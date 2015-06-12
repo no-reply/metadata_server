@@ -25,6 +25,15 @@
       width: 234px;
       margin-top: -8px;
     }
+   .choices ul li {
+     margin: 0.5em;
+   }
+   .choices ul li:nth(2n+1) {
+     background-color: #eee;
+   }
+   .choices ul li a {
+     cursor: pointer;
+   }
     #citation-modal p.header {
       font-size: 115%;
       font-weight: bold;
@@ -45,7 +54,6 @@
     #citation-modal p.header:after, #citation-modal span.label:after {
       content: ":";
     }
-
     #print-modal p.header {
       font-size: 115%;
       font-weight: bold;
@@ -140,7 +148,7 @@
       <p class="header">Displayed Manifests</p>
       <ul>
         {{#each choices}}
-          <li><a class="manifest" data-drs-id="{{ drs_id }}" data-n="{{ n }}">{{ label }}</a></li>
+          <li><a class="manifest" data-drs-id="{{ drs_id }}" data-n="{{ n }}" href="#no-op">{{ label }}</a></li>
         {{/each}}
       </ul>
     </div>
@@ -149,7 +157,7 @@
   <script id="print-tmpl" type="text/x-handlebars-template">
     <div title="Print" class="print {{ op }}">
       <p class="header">Print Manifest</p>
-  
+
 
       <table width="100%" border="0" cellspacing="15">
       <tr valign="top">
@@ -190,7 +198,7 @@
       <tr><td>
          Email address: <input type="text" name="email" size="32" onclick="" value=""/>
       </td></tr>
-  
+
     </table>
     <br/>
     <table border="0" width="100%" align="center"><tr align="right"><td>
@@ -306,6 +314,7 @@
                             close: function (e) { $(this).remove()}
             }).dialog('open');
             $dialog.find('a').on('click', function (e) {
+              e.preventDefault();
               $dialog.dialog('close');
               operations[op]($(e.currentTarget).data('drs-id'), $(e.currentTarget).data('n'));
             });
