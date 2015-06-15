@@ -228,11 +228,7 @@
 
       Mirador({
         "id": "viewer",
-        {% if num_manifests > 0 and num_manifests <= 2 %}
-          "layout": "1x{{num_manifests}}",
-        {% else %}
-          "layout": "1x1",
-        {% endif %}
+        "layout": {{layout_string}}
         "saveSession": false,
         "mainMenuSettings" : {
           "buttons": { bookmark: false},
@@ -244,7 +240,7 @@
              "iconClass": "fa fa-external-link",
              "attributes": { "id": "view-in-pds", "href": "#no-op"}},
             {"label": "Cite",
-             "iconClass": "fa fa-paper-plane",
+             "iconClass": "fa fa-quote-left",
              "attributes": { "id": "cite", "href": "#no-op"}},
             {"label": "Search",
              "iconClass": "fa fa-search",
@@ -261,7 +257,7 @@
 
         "data": [
           {% autoescape off %}
-            {{ manifests_json|join:",\n" }}
+            {{ manifests_json|join:"," }}
           {% endautoescape %}
         ],
         {% if num_manifests <= 2 and num_manifests > 0 %}
