@@ -37,6 +37,11 @@ def view(request, view_type, document_id):
     manifests = {}
     manifests_json = []
     ams_cookie = None
+
+    def layout_string(n):
+        """Return nxn formatted string of y, x arrangement for windows"""
+        return "{0}x{1}".format((n / 2) + (n % 2), 1 if n == 1 else 2)
+
     if 'hulaccess' in request.COOKIES:
         ams_cookie = request.COOKIES['hulaccess']
     host = request.META['HTTP_HOST']
@@ -64,7 +69,13 @@ def view(request, view_type, document_id):
                                                "title": title}))
 
     if len(manifests) > 0:
-        view_locals = {'manifests' : manifests, 'manifests_json': manifests_json, 'num_manifests': len(manifests), 'loadedUri': manifests.keys()[0], 'pds_view_url': PDS_VIEW_URL}
+        view_locals = {'manifests' : manifests,
+                       'manifests_json': manifests_json,
+                       'num_manifests': len(manifests),
+                       'loadedUri': manifests.keys()[0],
+                       'pds_view_url': PDS_VIEW_URL,
+                       'layout_string': layout_string(len(manifests)),
+                   }
         # Check if its an experimental/dev Mirador codebase, otherwise use production
         if (view_type == "view-dev"):
             return render(request, 'manifests/dev.html', view_locals)
