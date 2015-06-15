@@ -260,14 +260,12 @@
             {{ manifests_json|join:"," }}
           {% endautoescape %}
         ],
-        {% if num_manifests <= 2 and num_manifests > 0 %}
-          "windowObjects":[
-            {% for uri, title in manifests.items %}
-              { "loadedManifest": "{{ uri }}",
-                "viewType": "ImageView" },
-            {% endfor %}
-          ],
-        {% endif %}
+        "windowObjects":[
+          {% for uri, title in manifests.items %}
+            { "loadedManifest": "{{ uri }}",
+              "viewType": "ImageView" },
+          {% endfor %}
+        ],
         "defaultWindowSettings": {
           "annotationLayer": false
         }
