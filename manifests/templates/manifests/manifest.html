@@ -97,7 +97,7 @@
 
         "data": [
           {% autoescape off %}
-            {{ manifests_json|join:",\n" }}
+            {{ manifests_json|join:"," }}
           {% endautoescape %}
         ],
         {% if num_manifests <= 2 and num_manifests > 0 %}
