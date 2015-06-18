@@ -104,6 +104,11 @@
       content: ":";
     }
 
+   /* HAX: In lieu of being able to disable in config, hide annotations icon */
+   .mirador-osd-annotations-layer.hud-control {
+     display: none;
+   }
+
   </style>
 </head>
 <body>
@@ -288,11 +293,6 @@
         "id": "viewer",
         "layout": "{{ layout_string }}",
         "saveSession": false,
-        "workspaces" : {
-          "singleObject" : { "defaultWindowOptions": {"annotationLayerAvailable": false }},
-          "compare" : { "defaultWindowOptions": {"annotationLayerAvailable": false }},
-          "bookReading" : { "defaultWindowOptions": {"annotationLayerAvailable": false }},
-        },
         "mainMenuSettings" : {
           "buttons": { bookmark: false},
           "userButtons": [
@@ -328,11 +328,7 @@
             { "loadedManifest": "{{ uri }}",
               "viewType": "ImageView" },
           {% endfor %}
-        ],
-        "defaultWindowSettings": {
-          "annotationLayer": false,
-          "annotationLayerAvailable": false
-        }
+        ]
       });
 
       var present_choices = function (e) {
