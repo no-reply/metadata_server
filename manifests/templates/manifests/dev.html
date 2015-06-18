@@ -231,8 +231,8 @@
         t[this.id] = Handlebars.compile(this.innerHTML);
       });
 
-      //print form 
-      
+      //print form
+
       var printPDF = function(btn, event){
         var d_id = $("#drs_id").val();
         var url = PDS_PRINT_URL + d_id;
@@ -240,41 +240,36 @@
         var focusType = window.currentFocus,
             n = window.focusModules[focusType].currentImgIndex + 1;
         if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome, Opera, Safari
-           xmlhttp=new XMLHttpRequest();
+                                    xmlhttp=new XMLHttpRequest();
         }
         else {// code for IE6, IE5
-         xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-        } 
+              xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+        }
         var $dialog = $('#print-tmpl');
 
-        var printMode = $("#printOpt").val(); 
+        var printMode = $("#printOpt").val();
         var email = $("#email").val();
         var start = $("#start").val();
         var end = $("#end").val();
         if (printMode === "current") {
           u = u + '?n=' + n +'&printOpt=single';
           window.open(u,'');
-          $dialog.close(); 
+          $dialog.close();
 
         } else if (printMode === "range") {
           u = u + '&printOpt=range' + '&start=' + start +
-                             '&end=' + end + '&email=' + email;
-                           xmlhttp.open('GET',u,true);
-                           xmlhttp.send();
-          $dialog.close();                 
+              '&end=' + end + '&email=' + email;
+          xmlhttp.open('GET',u,true);
+          xmlhttp.send();
+          $dialog.close();
 
-        } else  //all  {
-              u = u + '&printOpt=range' + '&start=' + start +
-                             '&end=' + end + '&email=' + email;
-                           xmlhttp.open('GET',u,true);
-                           xmlhttp.send();
-          $dialog.close(); 
+        } else  { //all
+          u = u + '&printOpt=range' + '&start=' + start +
+                      '&end=' + end + '&email=' + email;
+          xmlhttp.open('GET',u,true);
+          xmlhttp.send();
+          $dialog.close();
         }
-
- 
-
-
-
       };
 
 
