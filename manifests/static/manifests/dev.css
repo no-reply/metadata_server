@@ -1,0 +1,107 @@
+body {
+  padding: 0; margin: 0; overflow: hidden; font-size: 70%;
+}
+#viewer {
+  background: #333 url('./dev/images/debut_dark.png') left top repeat; width: 100%; height: 100%; position: fixed;
+}
+.user-buttons li .fa {
+  color: #888;
+  font-size: 18px;
+  vertical-align: middle;
+}
+#harvard-bug {
+  background-image: url('./dev/images/logos/harvard_header.jpg');
+  display: inline-block;
+  color: transparent;
+  text-indent: 9000px;
+  overflow: hidden;
+  height:33px;
+  padding: 0;
+  width: 234px;
+  margin-top: -8px;
+}
+.choices ul li {
+  margin: 0.5em;
+}
+.choices ul li:nth(2n+1) {
+  background-color: #eee;
+}
+.choices ul li a {
+  cursor: pointer;
+}
+#citation-modal p.header {
+  font-size: 115%;
+  font-weight: bold;
+}
+.ui-dialog-titlebar {
+  display: block;
+  color: black;
+}
+#citation-modal span.label {
+  font-weight: bold;
+}
+#citation-modal ul {
+  list-style: none inside none;
+}
+#citation-modal ul li {
+  margin-bottom: 0.5em;
+}
+#citation-modal p.header:after,
+#citation-modal span.label:after {
+  content: ":";
+}
+#print-modal p.header {
+  font-size: 115%;
+  font-weight: bold;
+}
+#print-modal span.label {
+  font-weight: bold;
+}
+#print-modal ul {
+  list-style: none inside none;
+}
+#print-modal ul li {
+  margin-bottom: 0.5em;
+}
+#print-modal p.header:after,
+#print-modal span.label:after {
+  content: ":";
+}
+.textsmallred {
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 90%;
+  color: #990000;
+  text-decoration: none;
+}
+.buttonhighlightred {
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 90%;
+  font-weight: bold;
+  color: #FFFFFF;
+  text-decoration: none;
+  background-color: #990000;
+  padding: 2px;
+  margin: 0px;
+}
+#search-modal p.header {
+  font-size: 115%;
+  font-weight: bold;
+}
+#search-modal span.label {
+  font-weight: bold;
+}
+#search-modal ul {
+  list-style: none inside none;
+}
+#search-modal ul li {
+  margin-bottom: 0.5em;
+}
+#search-modal p.header:after,
+#search-modal span.label:after {
+  content: ":";
+}
+
+/* HAX: In lieu of being able to disable in config, hide annotations icon */
+.mirador-osd-annotations-layer.hud-control {
+  display: none;
+}
