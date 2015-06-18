@@ -6,6 +6,7 @@ from manifests import mods
 from manifests import models
 from manifests import ams
 from os import environ
+import re
 import json
 import urllib2
 import requests
@@ -33,10 +34,26 @@ def index(request, source=None):
 
 # view any number of MODS, METS, or HUAM objects
 def view(request, view_type, document_id):
-    doc_ids = document_id.split(';')
+    doc_ids = filter(lambda x:x, document_id.split(';'))
     manifests = {}
     manifests_json = []
     ams_cookie = None
+
+    # Parse ID from URL
+    def parse_id(raw):
+        p = {} # p is for parsed!
+        source_sep = raw.find(":")
+        p["source"] = raw[0:source_sep]
+        id_sep = raw.find("|")
+        if id_sep == -1:
+            id_sep = None
+        p["id"] = raw[source_sep+1:id_sep]
+        if id_sep:
+            m = re.match(r"(\d+)([ibs])?", raw[id_sep+1:])
+            (p["seq"], p["view"]) = [x if x else None for x in m.groups()]
+        # TODO: k:v pairs for now, planned structure is "|key=val,..."
+        # TODO: validate id! Throw interesting errors!
+        return p
 
     def layout_string(n):
         """Return nxn formatted string of y, x arrangement for windows"""
@@ -46,20 +63,17 @@ def view(request, view_type, document_id):
         ams_cookie = request.COOKIES['hulaccess']
     host = request.META['HTTP_HOST']
     for doc_id in doc_ids:
-        parts = doc_id.split(':')
-        if len(parts) != 2:
-            continue # not a valid id, don't display
-        source = parts[0]
-        id = parts[1]
+        parts = parse_id(doc_id)
+
         # drs: check AMS to see if this is a restricted obj
         # TODO:  move this check into get_manifest() for hollis
-        if 'drs' == source:
-            ams_redirect = ams.getAMSredirectUrl(request.COOKIES, id)
+        if 'drs' == parts["source"]:
+            ams_redirect = ams.getAMSredirectUrl(request.COOKIES, parts["id"])
             if ams_redirect:
                 return HttpResponseRedirect(ams_redirect)
 
         #print source, id
-        (success, response, real_id, real_source) = get_manifest(id, source, False, host, ams_cookie)
+        (success, response, real_id, real_source) = get_manifest(parts["id"], parts["source"], False, host, ams_cookie)
         if success:
             title = models.get_manifest_title(real_id, real_source)
             uri = "http://%s/manifests/%s:%s" % (host,real_source,real_id)
