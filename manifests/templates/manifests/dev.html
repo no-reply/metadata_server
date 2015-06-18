@@ -195,7 +195,7 @@
     <br/>
     <table border="0" width="100%" align="center"><tr align="right"><td>
     <div>
-    <input type="submit"  class="buttonhighlightred" value="   Convert   "  onclick="" name="submit"/>
+    <input type="submit"  class="buttonhighlightred" value="   Convert   "  onclick="" name="pdssubmit"/>
     </div></td></tr></table></form></td></tr></table>
 
 
@@ -209,14 +209,72 @@
   <script type="text/javascript">
     $(function() {
       var PDS_VIEW_URL = "{{ pds_view_url }}"
-      var PDS_PRINT_URL = "{{ pds_print_url }}"
-      var PDS_SEARCH_URL = "{{ pds_search_url }}"
+      var PDS_PRINT_URL = "http://pdstest.hul.harvard.edu/pds/printpdf/"
+      var PDS_SEARCH_URL = "http://pdstest.hul.harvard.edu/pds/find/"
 
       // Compile Handlebars templates into t
       var t = {};
       $('script[type="text/x-handlebars-template"]').each(function () {
         t[this.id] = Handlebars.compile(this.innerHTML);
       });
+
+      //print form 
+      
+      var printPDF = function(btn, event){
+        var d_id = $("#drs_id").val();
+        var url = PDS_PRINT_URL + d_id;
+        var xmlhttp;
+        var focusType = window.currentFocus,
+            n = window.focusModules[focusType].currentImgIndex + 1;
+        if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome, Opera, Safari
+           xmlhttp=new XMLHttpRequest();
+        }
+        else {// code for IE6, IE5
+         xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+        } 
+        var $dialog = $('#print-tmpl');
+
+        var printMode = $("#printOpt").val(); 
+        var email = $("#email").val();
+        var start = $("#start").val();
+        var end = $("#end").val();
+        if (printMode === "current") {
+          u = u + '?n=' + n +'&printOpt=single';
+          window.open(u,'');
+          $dialog.close(); 
+
+        } else if (printMode === "range") {
+          u = u + '&printOpt=range' + '&start=' + start +
+                             '&end=' + end + '&email=' + email;
+                           xmlhttp.open('GET',u,true);
+                           xmlhttp.send();
+          $dialog.close();                 
+
+        } else  //all  {
+              u = u + '&printOpt=range' + '&start=' + start +
+                             '&end=' + end + '&email=' + email;
+                           xmlhttp.open('GET',u,true);
+                           xmlhttp.send();
+          $dialog.close(); 
+        }
+
+ 
+
+
+
+      };
+
+
+
+      $( "#print" ).submit(function( event ) {
+        //alert( "Handler for .submit() called." );
+        printPdf(event);
+        event.preventDefault();
+        });
+
+       $( "#pdssubmit" ).click(function() {
+        $( "#print" ).submit();
+       });
 
       Mirador({
         "id": "viewer",
